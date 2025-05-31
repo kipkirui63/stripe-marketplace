@@ -6,9 +6,9 @@ import { Link } from 'react-router-dom';
 const Navigation = () => {
   const navItems = [
     { name: 'Home', icon: Home, href: '/' },
-    { name: 'About', icon: Users, href: '#' },
-    { name: 'Services', icon: Settings, href: '#' },
-    { name: 'Contact', icon: Phone, href: '#' },
+    { name: 'About', icon: Users, href: '/about' },
+    { name: 'Services', icon: Settings, href: '/services' },
+    { name: 'Contact', icon: Phone, href: '/contact' },
     { name: 'Assessment', icon: FileText, href: '#' },
     { name: 'Marketplace', icon: ShoppingCart, href: '/marketplace' },
   ];

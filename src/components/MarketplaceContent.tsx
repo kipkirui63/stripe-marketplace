@@ -37,7 +37,7 @@ const MarketplaceContent = () => {
       reviewCount: 28,
       badge: 'NEW',
       badgeColor: 'bg-purple-500',
-      icon: '📊',
+      icon: '/lovable-uploads/7de4bd60-8000-41fa-a8e4-5637d9bfdf5c.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
@@ -50,7 +50,7 @@ const MarketplaceContent = () => {
       reviewCount: 42,
       badge: 'TRENDING',
       badgeColor: 'bg-orange-500',
-      icon: '👤',
+      icon: '/lovable-uploads/2284d8b0-4266-444a-8a5a-05b6701d561b.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
@@ -63,7 +63,7 @@ const MarketplaceContent = () => {
       reviewCount: 124,
       badge: 'BESTSELLER',
       badgeColor: 'bg-orange-400',
-      icon: '✍️',
+      icon: '/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
@@ -76,7 +76,7 @@ const MarketplaceContent = () => {
       reviewCount: 35,
       badge: 'NEW',
       badgeColor: 'bg-purple-500',
-      icon: '📋',
+      icon: '/lovable-uploads/7b72063e-9cd7-4e40-8b15-390ea27053e1.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
@@ -89,7 +89,7 @@ const MarketplaceContent = () => {
       reviewCount: 67,
       badge: 'POPULAR',
       badgeColor: 'bg-green-500',
-      icon: '📄',
+      icon: '/lovable-uploads/ee996b90-5709-4ed0-a535-014aa0accf98.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     }
   ];
@@ -219,7 +219,7 @@ const MarketplaceContent = () => {
                 </div>
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <div className="flex items-center space-x-3">
-                    <div className="text-3xl">{app.icon}</div>
+                    <img src={app.icon} alt={app.name} className="w-12 h-12 object-contain" />
                     <div className="text-xl font-bold text-gray-900">{app.name}</div>
                   </div>
                 </div>
