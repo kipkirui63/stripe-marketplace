@@ -5,13 +5,22 @@ import { Link } from 'react-router-dom';
 
 const Navigation = () => {
   const navItems = [
-    { name: 'Home', icon: Home, href: '/' },
-    { name: 'About', icon: Users, href: '/about' },
-    { name: 'Services', icon: Settings, href: '/services' },
-    { name: 'Contact', icon: Phone, href: '/contact' },
+    { name: 'Home', icon: Home, href: '#home' },
+    { name: 'About', icon: Users, href: '#about' },
+    { name: 'Services', icon: Settings, href: '#services' },
+    { name: 'Contact', icon: Phone, href: '#contact' },
     { name: 'Assessment', icon: FileText, href: '#' },
     { name: 'Marketplace', icon: ShoppingCart, href: '/marketplace' },
   ];
+
+  const handleScrollTo = (href: string) => {
+    if (href.startsWith('#')) {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <nav className="w-full bg-white/90 backdrop-blur-sm border-b border-gray-200/50 fixed top-0 z-50">
@@ -39,13 +48,13 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ) : (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
+                  onClick={() => handleScrollTo(item.href)}
                   className="text-gray-600 hover:text-blue-500 transition-colors duration-200 font-medium"
                 >
                   {item.name}
-                </a>
+                </button>
               )
             ))}
             <button className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-colors duration-200">
