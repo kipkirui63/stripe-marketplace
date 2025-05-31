@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, ShoppingCart, Home } from 'lucide-react';
+import { Search, ShoppingCart, Home, Star, ThumbsUp } from 'lucide-react';
 
 const MarketplaceContent = () => {
   const [activeTab, setActiveTab] = useState('All Apps');
@@ -8,34 +8,67 @@ const MarketplaceContent = () => {
   const apps = [
     {
       id: 1,
-      name: 'Business Intelligence',
-      description: 'Advanced analytics platform',
+      name: 'Business Intelligence Agent',
+      description: 'Intelligent agent that converts natural language queries into optimized SQL code instantly with AI-powered translation.',
+      price: '$39.00',
+      freeTrialDays: '7-day free trial',
+      rating: 5.0,
+      reviewCount: 28,
       badge: 'NEW',
       badgeColor: 'bg-purple-500',
       icon: '📊',
-      color: 'bg-blue-100'
+      backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
       id: 2,
-      name: 'User Profile Manager',
-      description: 'Comprehensive user management',
+      name: 'AI Recruitment Assistant',
+      description: 'Streamlines talent acquisition with intelligent resume screening, candidate matching, and automated interview scheduling.',
+      price: '$19.00',
+      freeTrialDays: '7-day free trial',
+      rating: 4.8,
+      reviewCount: 42,
       badge: 'TRENDING',
       badgeColor: 'bg-orange-500',
       icon: '👤',
-      color: 'bg-blue-100'
+      backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     },
     {
       id: 3,
       name: 'CrispWrite',
-      description: 'AI-powered writing assistant',
+      description: 'Advanced content creation tool that generates high-quality, SEO-optimized articles, blog posts, and marketing copy.',
+      price: '$89.99',
+      freeTrialDays: '7-day free trial',
+      rating: 4.9,
+      reviewCount: 124,
       badge: 'BESTSELLER',
       badgeColor: 'bg-orange-400',
       icon: '✍️',
-      color: 'bg-blue-100'
+      backgroundGradient: 'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400'
     }
   ];
 
   const tabs = ['All Apps', 'Popular', 'New'];
+
+  const renderStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const stars = [];
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<Star key="half" className="w-4 h-4 fill-yellow-400/50 text-yellow-400" />);
+    }
+
+    const remainingStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(<Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
+    }
+
+    return stars;
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -81,27 +114,49 @@ const MarketplaceContent = () => {
       {/* App Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {apps.map((app) => (
-          <div key={app.id} className="relative bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            {/* Badge */}
-            <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded`}>
-              {app.badge}
-            </div>
-            
-            {/* App Icon and Info */}
-            <div className="flex items-start space-x-4">
-              <div className={`w-16 h-16 ${app.color} rounded-lg flex items-center justify-center text-2xl`}>
-                {app.icon}
+          <div key={app.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            {/* App Header with Image/Icon */}
+            <div className={`relative h-48 ${app.backgroundGradient} flex items-center justify-center`}>
+              <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded`}>
+                {app.badge}
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-gray-900 mb-1">{app.name}</h3>
-                <p className="text-gray-600 text-sm">{app.description}</p>
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">{app.icon}</div>
+                  <div className="text-xl font-bold text-gray-900">{app.name}</div>
+                </div>
               </div>
             </div>
             
-            {/* Action Button */}
-            <div className="mt-4">
-              <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium">
-                View Details
+            {/* App Content */}
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-xl text-gray-900">{app.name}</h3>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-blue-600">{app.price}</div>
+                  <div className="text-sm text-green-600">{app.freeTrialDays}</div>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 text-sm mb-4 leading-relaxed">{app.description}</p>
+              
+              {/* Rating and Reviews */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex">
+                    {renderStars(app.rating)}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{app.rating} ({app.reviewCount})</span>
+                </div>
+                <button className="flex items-center space-x-1 text-blue-500 hover:text-blue-600 text-sm">
+                  <ThumbsUp className="w-4 h-4" />
+                  <span>Rate</span>
+                </button>
+              </div>
+              
+              {/* Action Button */}
+              <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                Add to Cart
               </button>
             </div>
           </div>

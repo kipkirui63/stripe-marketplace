@@ -3,6 +3,7 @@ import React from 'react';
 import Navigation from '../components/Navigation';
 import MarketplaceHero from '../components/MarketplaceHero';
 import MarketplaceContent from '../components/MarketplaceContent';
+import MarketplaceFooter from '../components/MarketplaceFooter';
 
 const Marketplace = () => {
   return (
@@ -10,6 +11,7 @@ const Marketplace = () => {
       <Navigation />
       <MarketplaceHero />
       <MarketplaceContent />
+      <MarketplaceFooter />
     </div>
   );
 };
