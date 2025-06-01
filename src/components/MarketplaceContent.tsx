@@ -5,111 +5,21 @@ import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 
-interface App {
-  id: number;
+interface CartItem {
+  id: string;
   name: string;
-  description: string;
   price: string;
-  freeTrialDays: string;
-  rating: number;
-  reviewCount: number;
-  badge: string;
-  badgeColor: string;
-  icon: string;
-  backgroundGradient: string;
 }
 
 const MarketplaceContent = () => {
   const [activeTab, setActiveTab] = useState('All');
-  const [cartItems, setCartItems] = useState<App[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [userRatings, setUserRatings] = useState<{ [key: number]: number }>({});
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
-  // Sample apps data
-  const allApps: App[] = [
-    {
-      id: 1,
-      name: 'Business Intelligence Agent',
-      description: 'Advanced AI-powered analytics platform that transforms your data into actionable insights with real-time dashboards and predictive modeling.',
-      price: '$49.99',
-      freeTrialDays: '14-day free trial',
-      rating: 4.8,
-      reviewCount: 342,
-      badge: 'Popular',
-      badgeColor: 'bg-blue-500',
-      icon: '📊',
-      backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600'
-    },
-    {
-      id: 2,
-      name: 'AI Recruitment Assistant',
-      description: 'Streamline your hiring process with AI-powered candidate screening, interview scheduling, and talent matching algorithms.',
-      price: '$79.99',
-      freeTrialDays: '7-day free trial',
-      rating: 4.9,
-      reviewCount: 189,
-      badge: 'New',
-      badgeColor: 'bg-green-500',
-      icon: '👥',
-      backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500'
-    },
-    {
-      id: 3,
-      name: 'CrispWrite',
-      description: 'Professional writing assistant that helps create compelling content, from emails to reports, with AI-powered grammar and style suggestions.',
-      price: '$29.99',
-      freeTrialDays: '30-day free trial',
-      rating: 4.7,
-      reviewCount: 567,
-      badge: 'Best Value',
-      badgeColor: 'bg-orange-500',
-      icon: '✍️',
-      backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500'
-    },
-    {
-      id: 4,
-      name: 'SOP Assistant',
-      description: 'Create, manage, and optimize Standard Operating Procedures with intelligent templates and collaborative editing features.',
-      price: '$39.99',
-      freeTrialDays: '21-day free trial',
-      rating: 4.6,
-      reviewCount: 234,
-      badge: 'Trending',
-      badgeColor: 'bg-purple-500',
-      icon: '📋',
-      backgroundGradient: 'bg-gradient-to-br from-purple-400 to-pink-500'
-    },
-    {
-      id: 5,
-      name: 'Resume Analyzer',
-      description: 'Advanced resume screening tool that evaluates candidates against job requirements with detailed scoring and recommendations.',
-      price: '$19.99',
-      freeTrialDays: '10-day free trial',
-      rating: 4.5,
-      reviewCount: 445,
-      badge: 'Essential',
-      badgeColor: 'bg-indigo-500',
-      icon: '📄',
-      backgroundGradient: 'bg-gradient-to-br from-indigo-400 to-blue-600'
-    }
-  ];
-
-  const filteredApps = activeTab === 'All' 
-    ? allApps 
-    : allApps.filter(app => {
-        const categoryMap: { [key: string]: string[] } = {
-          'Analytics': ['Business Intelligence Agent'],
-          'Writing': ['CrispWrite'],
-          'Recruitment': ['AI Recruitment Assistant', 'Resume Analyzer'],
-          'Business': ['SOP Assistant']
-        };
-        return categoryMap[activeTab]?.includes(app.name);
-      });
-
-  const addToCart = (item: App) => {
+  const addToCart = (item: CartItem) => {
     setCartItems(prev => {
       const exists = prev.find(cartItem => cartItem.id === item.id);
       if (exists) return prev;
@@ -117,15 +27,8 @@ const MarketplaceContent = () => {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleRate = (appId: number, rating: number) => {
-    setUserRatings(prev => ({
-      ...prev,
-      [appId]: rating
-    }));
   };
 
   return (
@@ -142,10 +45,8 @@ const MarketplaceContent = () => {
           />
           
           <AppsGrid
-            apps={filteredApps}
-            userRatings={userRatings}
+            activeTab={activeTab}
             onAddToCart={addToCart}
-            onRate={handleRate}
           />
         </div>
       </div>
@@ -153,7 +54,7 @@ const MarketplaceContent = () => {
       <CartSidebar
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        cartItems={cartItems}
+        items={cartItems}
         onRemoveItem={removeFromCart}
       />
 
