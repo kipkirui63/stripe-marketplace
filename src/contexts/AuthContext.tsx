@@ -41,33 +41,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    console.log('Attempting login for:', email);
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Email:', email);
+    console.log('API URL:', `${API_BASE_URL}/login`);
     setIsLoading(true);
     
     try {
-      console.log('Making login request to:', `${API_BASE_URL}/login`);
+      const requestBody = { email, password };
+      console.log('Request body:', requestBody);
       
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(requestBody),
       });
 
-      console.log('Login response status:', response.status);
-      console.log('Login response ok:', response.ok);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Login failed' }));
-        console.error('Login error response:', errorData);
-        throw new Error(errorData.detail || errorData.message || 'Login failed');
+        console.error('Login failed with status:', response.status);
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { detail: `HTTP ${response.status}: ${responseText || 'Login failed'}` };
+        }
+        console.error('Login error data:', errorData);
+        throw new Error(errorData.detail || errorData.message || `Login failed (${response.status})`);
       }
 
-      const data = await response.json();
-      console.log('Login response data:', data);
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error('Invalid response format from server');
+      }
+      
+      console.log('Parsed login response:', data);
       
       if (!data.token) {
+        console.error('No token in response:', data);
         throw new Error('No token received from server');
       }
 
@@ -79,7 +99,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Login successful, token stored');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('=== LOGIN ERROR ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -87,34 +110,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (email: string, password: string) => {
-    console.log('Attempting registration for:', email);
+    console.log('=== REGISTRATION ATTEMPT ===');
+    console.log('Email:', email);
+    console.log('API URL:', `${API_BASE_URL}/register`);
     setIsLoading(true);
     
     try {
-      console.log('Making register request to:', `${API_BASE_URL}/register`);
+      const requestBody = { email, password };
+      console.log('Request body:', requestBody);
       
+      console.log('Making fetch request...');
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(requestBody),
       });
 
-      console.log('Register response status:', response.status);
-      console.log('Register response ok:', response.ok);
+      console.log('Response received!');
+      console.log('Response status:', response.status);
+      console.log('Response statusText:', response.statusText);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Response URL:', response.url);
+      
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Registration failed' }));
-        console.error('Register error response:', errorData);
-        throw new Error(errorData.detail || errorData.message || 'Registration failed');
+        console.error('Registration failed with status:', response.status);
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { detail: `HTTP ${response.status}: ${responseText || 'Registration failed'}` };
+        }
+        console.error('Registration error data:', errorData);
+        throw new Error(errorData.detail || errorData.message || `Registration failed (${response.status})`);
       }
 
-      console.log('Registration successful, attempting auto-login');
+      console.log('Registration successful, attempting auto-login...');
       // Auto-login after registration
       await login(email, password);
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('=== REGISTRATION ERROR ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        console.error('This looks like a network error - check if your backend server is running!');
+      }
+      console.error('Full error:', error);
       throw error;
     } finally {
       setIsLoading(false);
