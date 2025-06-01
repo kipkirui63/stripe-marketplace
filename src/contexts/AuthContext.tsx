@@ -1,8 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
-  id: string;
   email: string;
 }
 
@@ -34,75 +32,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (token) {
-      // Here you could verify the token with your backend if needed
-      // For now, we'll assume the token is valid if it exists
-      setUser({ id: 'user-id', email: 'user@example.com' });
+      const storedEmail = localStorage.getItem('email');
+      if (storedEmail) {
+        setUser({ email: storedEmail });
+      }
     }
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    console.log('=== LOGIN ATTEMPT ===');
-    console.log('Email:', email);
-    console.log('API URL:', `${API_BASE_URL}/auth/login`);
     setIsLoading(true);
-    
     try {
-      const requestBody = { email, password };
-      console.log('Request body:', requestBody);
-      
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      const responseText = await response.text();
-      console.log('Raw response text:', responseText);
-
       if (!response.ok) {
-        console.error('Login failed with status:', response.status);
-        let errorData;
-        try {
-          errorData = JSON.parse(responseText);
-        } catch (e) {
-          errorData = { detail: `HTTP ${response.status}: ${responseText || 'Login failed'}` };
-        }
-        console.error('Login error data:', errorData);
-        throw new Error(errorData.detail || errorData.message || `Login failed (${response.status})`);
+        const error = await response.json().catch(() => ({ detail: 'Login failed' }));
+        throw new Error(error.detail || 'Login failed');
       }
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
-        throw new Error('Invalid response format from server');
-      }
-      
-      console.log('Parsed login response:', data);
-      
-      if (!data.token) {
-        console.error('No token in response:', data);
-        throw new Error('No token received from server');
-      }
-
+      const data = await response.json();
       const newToken = data.token;
-      
+
       setToken(newToken);
+      setUser({ email });
       localStorage.setItem('token', newToken);
-      setUser({ id: data.user_id || 'user-id', email });
-      
-      console.log('Login successful, token stored');
+      localStorage.setItem('email', email);
     } catch (error) {
-      console.error('=== LOGIN ERROR ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
-      console.error('Full error:', error);
+      console.error('Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -110,51 +69,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (email: string, password: string) => {
-    console.log('=== REGISTRATION ATTEMPT ===');
-    console.log('Email:', email);
-    console.log('API URL:', `${API_BASE_URL}/auth/register`);
-    
     setIsLoading(true);
-    
     try {
-      const requestBody = { email, password };
-      console.log('Request body:', requestBody);
-      
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      const responseText = await response.text();
-      console.log('Raw response text:', responseText);
-
       if (!response.ok) {
-        console.error('Registration failed with status:', response.status);
-        let errorData;
-        try {
-          errorData = JSON.parse(responseText);
-        } catch (e) {
-          errorData = { detail: `HTTP ${response.status}: ${responseText || 'Registration failed'}` };
-        }
-        console.error('Registration error data:', errorData);
-        throw new Error(errorData.detail || errorData.message || `Registration failed (${response.status})`);
+        const error = await response.json().catch(() => ({ detail: 'Registration failed' }));
+        throw new Error(error.detail || 'Registration failed');
       }
 
-      console.log('Registration successful, attempting auto-login...');
-      // Auto-login after registration
       await login(email, password);
-      
     } catch (error) {
-      console.error('=== REGISTRATION ERROR ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
-      console.error('Full error:', error);
+      console.error('Registration error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -162,10 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    console.log('Logging out user');
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('email');
   };
 
   return (
