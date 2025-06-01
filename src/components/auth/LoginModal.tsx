@@ -21,26 +21,45 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('Form submitted:', { isRegister, email, password: '***' });
+    
+    if (!email || !password) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (isRegister) {
+        console.log('Attempting registration...');
         await register(email, password);
         toast({
           title: "Registration Successful",
           description: "You have been registered and logged in.",
         });
       } else {
+        console.log('Attempting login...');
         await login(email, password);
         toast({
-          title: "Login Successful",
+          title: "Login Successful", 
           description: "Welcome back!",
         });
       }
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
       onClose();
       onSuccess?.();
     } catch (error) {
+      console.error('Auth error in modal:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       });
     }
@@ -66,6 +85,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={isLoading}
             />
           </div>
           
@@ -77,13 +97,15 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={isLoading}
+              minLength={6}
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Processing...' : (isRegister ? 'Register' : 'Login')}
           </button>
@@ -93,6 +115,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
           <button
             onClick={() => setIsRegister(!isRegister)}
             className="text-blue-500 hover:underline text-sm"
+            disabled={isLoading}
           >
             {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
           </button>
