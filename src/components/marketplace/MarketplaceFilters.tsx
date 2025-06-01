@@ -8,6 +8,7 @@ interface MarketplaceFiltersProps {
   cartItemCount: number;
   onTabChange: (tab: string) => void;
   onCartClick: () => void;
+  onSignInClick: () => void;
 }
 
 const MarketplaceFilters = ({ 
@@ -15,7 +16,8 @@ const MarketplaceFilters = ({
   tabs, 
   cartItemCount, 
   onTabChange, 
-  onCartClick 
+  onCartClick,
+  onSignInClick
 }: MarketplaceFiltersProps) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
@@ -59,7 +61,10 @@ const MarketplaceFilters = ({
               </span>
             )}
           </button>
-          <button className="text-gray-600 hover:text-blue-500 font-medium">
+          <button 
+            onClick={onSignInClick}
+            className="text-gray-600 hover:text-blue-500 font-medium"
+          >
             Sign In
           </button>
         </div>
