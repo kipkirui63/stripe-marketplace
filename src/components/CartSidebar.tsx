@@ -1,6 +1,9 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { createCheckoutSession, getProductKey } from '../services/checkoutService';
+import { useToast } from '@/hooks/use-toast';
+import LoginModal from './auth/LoginModal';
 
 interface App {
   id: number;
@@ -24,10 +27,65 @@ interface CartSidebarProps {
 }
 
 const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarProps) => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { user, token } = useAuth();
+  const { toast } = useToast();
+
   const totalPrice = cartItems.reduce((total, item) => {
     const price = parseFloat(item.price.replace('$', ''));
     return total + price;
   }, 0);
+
+  const handleCheckout = async () => {
+    if (!user || !token) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast({
+        title: "Empty Cart",
+        description: "Please add items to your cart before checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // For now, we'll process the first item in the cart
+      // You can modify this to handle multiple items or create a bundle
+      const firstItem = cartItems[0];
+      const productKey = getProductKey(firstItem.name);
+      
+      const checkoutUrl = await createCheckoutSession(token, productKey);
+      
+      // Open Stripe checkout in a new tab
+      window.open(checkoutUrl, '_blank');
+      
+      toast({
+        title: "Redirecting to Checkout",
+        description: "Opening Stripe checkout in a new tab...",
+      });
+    } catch (error) {
+      toast({
+        title: "Checkout Error",
+        description: error instanceof Error ? error.message : "Failed to start checkout process",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false);
+    // Automatically trigger checkout after successful login
+    setTimeout(() => {
+      handleCheckout();
+    }, 500);
+  };
 
   if (!isOpen) return null;
 
@@ -94,12 +152,26 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
               <span className="text-lg font-semibold">Total:</span>
               <span className="text-2xl font-bold text-blue-600">${totalPrice.toFixed(2)}</span>
             </div>
-            <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium">
-              Proceed to Checkout
+            <button 
+              onClick={handleCheckout}
+              disabled={isProcessing}
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50"
+            >
+              {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
             </button>
+            {!user && (
+              <p className="text-sm text-gray-600 text-center">
+                You'll need to login to complete your purchase
+              </p>
+            )}
           </div>
         )}
       </div>
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={handleLoginSuccess}
+      />
     </>
   );
 };
