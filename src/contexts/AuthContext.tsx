@@ -43,14 +43,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     console.log('=== LOGIN ATTEMPT ===');
     console.log('Email:', email);
-    console.log('API URL:', `${API_BASE_URL}/login`);
+    console.log('API URL:', `${API_BASE_URL}/auth/login`);
     setIsLoading(true);
     
     try {
       const requestBody = { email, password };
       console.log('Request body:', requestBody);
       
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,17 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string) => {
     console.log('=== REGISTRATION ATTEMPT ===');
     console.log('Email:', email);
-    console.log('API URL:', `${API_BASE_URL}/register`);
-    
-    // Test if the server is reachable at all
-    console.log('Testing server connectivity...');
-    try {
-      const healthCheck = await fetch(`${API_BASE_URL}/`, { method: 'GET' });
-      console.log('Health check response status:', healthCheck.status);
-    } catch (healthError) {
-      console.error('Server appears to be unreachable:', healthError);
-      throw new Error('Cannot connect to server. Please make sure your backend is running on port 8000.');
-    }
+    console.log('API URL:', `${API_BASE_URL}/auth/register`);
     
     setIsLoading(true);
     
@@ -130,76 +120,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const requestBody = { email, password };
       console.log('Request body:', requestBody);
       
-      // Try different possible endpoints
-      const possibleEndpoints = [
-        `${API_BASE_URL}/register`,
-        `${API_BASE_URL}/api/register`,
-        `${API_BASE_URL}/auth/register`
-      ];
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
-      for (const endpoint of possibleEndpoints) {
-        console.log(`Trying endpoint: ${endpoint}`);
-        
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+
+      if (!response.ok) {
+        console.error('Registration failed with status:', response.status);
+        let errorData;
         try {
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-          });
-
-          console.log(`Response from ${endpoint}:`, {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            headers: Object.fromEntries(response.headers.entries())
-          });
-          
-          if (response.status === 404) {
-            console.log(`404 on ${endpoint}, trying next...`);
-            continue;
-          }
-          
-          const responseText = await response.text();
-          console.log('Raw response text:', responseText);
-
-          if (!response.ok) {
-            console.error('Registration failed with status:', response.status);
-            let errorData;
-            try {
-              errorData = JSON.parse(responseText);
-            } catch (e) {
-              errorData = { detail: `HTTP ${response.status}: ${responseText || 'Registration failed'}` };
-            }
-            console.error('Registration error data:', errorData);
-            throw new Error(errorData.detail || errorData.message || `Registration failed (${response.status})`);
-          }
-
-          console.log('Registration successful, attempting auto-login...');
-          // Auto-login after registration
-          await login(email, password);
-          return; // Success, exit the function
-          
-        } catch (fetchError) {
-          console.error(`Error with ${endpoint}:`, fetchError);
-          if (endpoint === possibleEndpoints[possibleEndpoints.length - 1]) {
-            // Last endpoint, re-throw the error
-            throw fetchError;
-          }
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { detail: `HTTP ${response.status}: ${responseText || 'Registration failed'}` };
         }
+        console.error('Registration error data:', errorData);
+        throw new Error(errorData.detail || errorData.message || `Registration failed (${response.status})`);
       }
-      
-      // If we get here, all endpoints returned 404
-      throw new Error('Registration endpoint not found. Please check your backend API configuration.');
+
+      console.log('Registration successful, attempting auto-login...');
+      // Auto-login after registration
+      await login(email, password);
       
     } catch (error) {
       console.error('=== REGISTRATION ERROR ===');
       console.error('Error type:', error.constructor.name);
       console.error('Error message:', error.message);
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        console.error('This looks like a network error - check if your backend server is running!');
-      }
       console.error('Full error:', error);
       throw error;
     } finally {
