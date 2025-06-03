@@ -27,14 +27,14 @@ const MarketplaceContent = () => {
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
-  // Sample apps data with corrected prices and proper images
+  // Sample apps data with updated prices and trial periods
   const allApps: App[] = [
     {
       id: 1,
       name: 'Business Intelligence Agent',
       description: 'Advanced AI-powered analytics platform that transforms your data into actionable insights with real-time dashboards and predictive modeling.',
-      price: '$99.99',
-      freeTrialDays: '14-day free trial',
+      price: '$19.99',
+      freeTrialDays: '7-day free trial',
       rating: 4.8,
       reviewCount: 342,
       badge: 'Popular',
@@ -46,7 +46,7 @@ const MarketplaceContent = () => {
       id: 2,
       name: 'AI Recruitment Assistant',
       description: 'Streamline your hiring process with AI-powered candidate screening, interview scheduling, and talent matching algorithms.',
-      price: '$149.99',
+      price: '$19.99',
       freeTrialDays: '7-day free trial',
       rating: 4.9,
       reviewCount: 189,
@@ -59,8 +59,8 @@ const MarketplaceContent = () => {
       id: 3,
       name: 'CrispWrite',
       description: 'Professional writing assistant that helps create compelling content, from emails to reports, with AI-powered grammar and style suggestions.',
-      price: '$59.99',
-      freeTrialDays: '30-day free trial',
+      price: '$89.99',
+      freeTrialDays: '7-day free trial',
       rating: 4.7,
       reviewCount: 567,
       badge: 'Best Value',
@@ -72,8 +72,8 @@ const MarketplaceContent = () => {
       id: 4,
       name: 'SOP Assistant',
       description: 'Create, manage, and optimize Standard Operating Procedures with intelligent templates and collaborative editing features.',
-      price: '$79.99',
-      freeTrialDays: '21-day free trial',
+      price: '$19.99',
+      freeTrialDays: '7-day free trial',
       rating: 4.6,
       reviewCount: 234,
       badge: 'Trending',
@@ -85,8 +85,8 @@ const MarketplaceContent = () => {
       id: 5,
       name: 'Resume Analyzer',
       description: 'Advanced resume screening tool that evaluates candidates against job requirements with detailed scoring and recommendations.',
-      price: '$39.99',
-      freeTrialDays: '10-day free trial',
+      price: '$19.99',
+      freeTrialDays: '7-day free trial',
       rating: 4.5,
       reviewCount: 445,
       badge: 'Essential',
