@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Star, ShoppingCart } from 'lucide-react';
+import { Star, ShoppingCart, ExternalLink } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface App {
   id: number;
@@ -14,6 +15,7 @@ interface App {
   badgeColor: string;
   icon: string;
   backgroundGradient: string;
+  agentUrl?: string;
 }
 
 interface AppCardProps {
@@ -24,6 +26,8 @@ interface AppCardProps {
 }
 
 const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
+  const { user } = useAuth();
+  
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
     const currentRating = interactive ? userRating : rating;
@@ -49,6 +53,19 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     return stars;
   };
 
+  const handleAgentClick = () => {
+    if (!user) {
+      alert('Please sign in to access the agent');
+      return;
+    }
+    
+    // TODO: Add subscription check here when subscription context is available
+    // For now, we'll allow access if user is logged in
+    if (app.agentUrl) {
+      window.open(app.agentUrl, '_blank');
+    }
+  };
+
   // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
@@ -65,7 +82,17 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       {/* App Content */}
       <div className="p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-xl text-gray-900">{app.name}</h3>
+          <h3 
+            className={`font-bold text-xl ${
+              app.agentUrl 
+                ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
+                : 'text-gray-900'
+            } transition-colors`}
+            onClick={app.agentUrl ? handleAgentClick : undefined}
+          >
+            {app.name}
+            {app.agentUrl && <ExternalLink className="w-4 h-4" />}
+          </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{app.price}</div>
             <div className="text-sm text-green-600">{app.freeTrialDays}</div>

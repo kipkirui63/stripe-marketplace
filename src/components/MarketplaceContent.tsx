@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
@@ -17,6 +16,7 @@ interface App {
   badgeColor: string;
   icon: string;
   backgroundGradient: string;
+  agentUrl?: string;
 }
 
 const MarketplaceContent = () => {
@@ -41,7 +41,8 @@ const MarketplaceContent = () => {
       badge: 'Popular',
       badgeColor: 'bg-blue-500',
       icon: '/lovable-uploads/2284d8b0-4266-444a-8a5a-05b6701d561b.png',
-      backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600'
+      backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
+      agentUrl: '' // To be updated later
     },
     {
       id: 2,
@@ -54,7 +55,8 @@ const MarketplaceContent = () => {
       badge: 'New',
       badgeColor: 'bg-green-500',
       icon: '/lovable-uploads/7b72063e-9cd7-4e40-8b15-390ea27053e1.png',
-      backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500'
+      backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500',
+      agentUrl: 'https://workflow.getmindpal.com/67751ba8f77a6fddb63cd44e'
     },
     {
       id: 3,
@@ -67,7 +69,8 @@ const MarketplaceContent = () => {
       badge: 'Best Value',
       badgeColor: 'bg-orange-500',
       icon: '/lovable-uploads/7de4bd60-8000-41fa-a8e4-5637d9bfdf5c.png',
-      backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500'
+      backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
+      agentUrl: '' // To be updated later
     },
     {
       id: 4,
@@ -80,7 +83,8 @@ const MarketplaceContent = () => {
       badge: 'Trending',
       badgeColor: 'bg-purple-500',
       icon: '/lovable-uploads/9da10f5d-9bed-40ae-aff5-2124ff4ee4c2.png',
-      backgroundGradient: 'bg-gradient-to-br from-purple-400 to-pink-500'
+      backgroundGradient: 'bg-gradient-to-br from-purple-400 to-pink-500',
+      agentUrl: 'https://workflow.getmindpal.com/sop-agent-workflow-avlkgrhad7x0xazm'
     },
     {
       id: 5,
@@ -93,7 +97,8 @@ const MarketplaceContent = () => {
       badge: 'Essential',
       badgeColor: 'bg-indigo-500',
       icon: '/lovable-uploads/ee996b90-5709-4ed0-a535-014aa0accf98.png',
-      backgroundGradient: 'bg-gradient-to-br from-indigo-400 to-blue-600'
+      backgroundGradient: 'bg-gradient-to-br from-indigo-400 to-blue-600',
+      agentUrl: 'https://workflow.getmindpal.com/67751e695156e8aaefc0c8de'
     }
   ];
 

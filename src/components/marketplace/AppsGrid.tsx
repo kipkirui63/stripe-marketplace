@@ -14,6 +14,7 @@ interface App {
   badgeColor: string;
   icon: string;
   backgroundGradient: string;
+  agentUrl?: string;
 }
 
 interface AppsGridProps {
