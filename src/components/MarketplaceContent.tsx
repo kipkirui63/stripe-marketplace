@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
@@ -35,7 +36,7 @@ const MarketplaceContent = () => {
       description: 'Advanced AI-powered analytics platform that transforms your data into actionable insights with real-time dashboards and predictive modeling.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 4.8,
+      rating: 0,
       reviewCount: 342,
       badge: 'Popular',
       badgeColor: 'bg-blue-500',
@@ -48,7 +49,7 @@ const MarketplaceContent = () => {
       description: 'Streamline your hiring process with AI-powered candidate screening, interview scheduling, and talent matching algorithms.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 4.9,
+      rating: 0,
       reviewCount: 189,
       badge: 'New',
       badgeColor: 'bg-green-500',
@@ -61,7 +62,7 @@ const MarketplaceContent = () => {
       description: 'Professional writing assistant that helps create compelling content, from emails to reports, with AI-powered grammar and style suggestions.',
       price: '$89.99',
       freeTrialDays: '7-day free trial',
-      rating: 4.7,
+      rating: 0,
       reviewCount: 567,
       badge: 'Best Value',
       badgeColor: 'bg-orange-500',
@@ -74,7 +75,7 @@ const MarketplaceContent = () => {
       description: 'Create, manage, and optimize Standard Operating Procedures with intelligent templates and collaborative editing features.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 4.6,
+      rating: 0,
       reviewCount: 234,
       badge: 'Trending',
       badgeColor: 'bg-purple-500',
@@ -87,7 +88,7 @@ const MarketplaceContent = () => {
       description: 'Advanced resume screening tool that evaluates candidates against job requirements with detailed scoring and recommendations.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 4.5,
+      rating: 0,
       reviewCount: 445,
       badge: 'Essential',
       badgeColor: 'bg-indigo-500',
@@ -121,6 +122,7 @@ const MarketplaceContent = () => {
   };
 
   const handleRate = (appId: number, rating: number) => {
+    console.log(`Rating app ${appId} with ${rating} stars`);
     setUserRatings(prev => ({
       ...prev,
       [appId]: rating

@@ -29,20 +29,17 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     const currentRating = interactive ? userRating : rating;
 
     for (let i = 1; i <= 5; i++) {
-      const isFilled = i <= Math.floor(currentRating);
-      const isHalfFilled = i === Math.ceil(currentRating) && currentRating % 1 !== 0;
+      const isFilled = i <= currentRating;
       
       stars.push(
         <Star
           key={i}
-          className={`w-4 h-4 cursor-pointer transition-colors ${
+          className={`w-4 h-4 transition-colors ${
             isFilled 
               ? 'fill-yellow-400 text-yellow-400' 
-              : isHalfFilled 
-                ? 'fill-yellow-400/50 text-yellow-400' 
-                : interactive 
-                  ? 'text-gray-300 hover:text-yellow-400' 
-                  : 'text-gray-300'
+              : interactive 
+                ? 'text-gray-300 hover:text-yellow-400 cursor-pointer' 
+                : 'text-gray-300'
           }`}
           onClick={interactive ? () => onRate(app.id, i) : undefined}
         />
@@ -85,13 +82,18 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
             <div className="flex">
               {renderStars(app.rating)}
             </div>
-            <span className="text-sm font-medium text-gray-700">{app.rating} ({app.reviewCount})</span>
+            <span className="text-sm font-medium text-gray-700">
+              {app.rating > 0 ? `${app.rating} (${app.reviewCount})` : `0 (${app.reviewCount})`}
+            </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Rate:</span>
+            <span className="text-sm text-gray-600">Your rating:</span>
             <div className="flex">
               {renderStars(0, true)}
             </div>
+            {userRating > 0 && (
+              <span className="text-sm text-yellow-600 font-medium">{userRating}/5</span>
+            )}
           </div>
         </div>
         
