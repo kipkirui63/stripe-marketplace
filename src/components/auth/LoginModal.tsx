@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,6 +17,9 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const { login, register, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -28,6 +34,15 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
       toast({
         title: "Validation Error",
         description: "Please fill in both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isRegister && (!firstName || !lastName)) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in your first and last name.",
         variant: "destructive",
       });
       return;
@@ -53,6 +68,9 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
       // Clear form
       setEmail('');
       setPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
       onClose();
       onSuccess?.();
     } catch (error) {
@@ -67,59 +85,163 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md z-50">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">{isRegister ? 'Register' : 'Login'}</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-            <X className="w-5 h-5" />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={onClose} />
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md z-50 border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {isRegister ? 'Create Account' : 'Welcome Back'}
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              {isRegister ? 'Join CrispAI Marketplace today' : 'Sign in to your account'}
+            </p>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              disabled={isLoading}
-              minLength={6}
-            />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {isRegister && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                  First Name
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="John"
+                    required={isRegister}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                  Last Name
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Doe"
+                    required={isRegister}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              Email Address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="john@example.com"
+                required
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
-          <button
+          {isRegister && (
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                Phone Number <span className="text-gray-400">(optional)</span>
+              </Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="+1 (555) 000-0000"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              Password
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="••••••••"
+                required
+                disabled={isLoading}
+                minLength={6}
+              />
+            </div>
+          </div>
+
+          <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Processing...' : (isRegister ? 'Register' : 'Login')}
-          </button>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              isRegister ? 'Create Account' : 'Sign In'
+            )}
+          </Button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
           <button
             onClick={() => setIsRegister(!isRegister)}
-            className="text-blue-500 hover:underline text-sm"
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
             disabled={isLoading}
           >
-            {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
+            {isRegister 
+              ? 'Already have an account? Sign in' 
+              : "Don't have an account? Create one"
+            }
           </button>
         </div>
+
+        {isRegister && (
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs text-blue-700 text-center">
+              By creating an account, you agree to our Terms of Service and Privacy Policy.
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
