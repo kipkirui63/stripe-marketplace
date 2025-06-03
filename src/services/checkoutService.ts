@@ -16,7 +16,12 @@ export const createCheckoutSession = async (token: string, product: string): Pro
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ token, product }),
+    body: JSON.stringify({ 
+      token, 
+      product,
+      success_url: `${window.location.origin}/marketplace`,
+      cancel_url: `${window.location.origin}/marketplace`
+    }),
   });
 
   if (!response.ok) {
