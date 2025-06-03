@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -71,6 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (firstName: string, lastName: string, email: string, phone: string, password: string) => {
     setIsLoading(true);
     try {
+      console.log('Registration data:', { firstName, lastName, email, phone, password: '***' });
+      
+      if (!firstName || !lastName || !email || !phone || !password) {
+        throw new Error('All required fields must be filled');
+      }
+
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

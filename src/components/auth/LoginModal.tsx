@@ -28,7 +28,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form submitted:', { isRegister, email, password: '***' });
+    console.log('Form submitted:', { isRegister, email, password: '***', firstName, lastName, phone });
     
     if (!email || !password) {
       toast({
@@ -71,7 +71,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
     try {
       if (isRegister) {
         console.log('Attempting registration...');
-        await register(email, password);
+        await register(firstName, lastName, email, phone, password);
         toast({
           title: "Registration Successful",
           description: "Account created successfully! Please sign in to continue.",
