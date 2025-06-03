@@ -2,6 +2,14 @@
 import React from 'react';
 
 const MarketplaceHero = () => {
+  const scrollToMarketplace = () => {
+    // Scroll to the marketplace content section
+    const marketplaceSection = document.querySelector('[data-marketplace-content]');
+    if (marketplaceSection) {
+      marketplaceSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="bg-blue-500 pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -16,7 +24,10 @@ const MarketplaceHero = () => {
               applications and AI agents to enhance<br />
               your workflow
             </p>
-            <button className="bg-white text-blue-500 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={scrollToMarketplace}
+              className="bg-white text-blue-500 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            >
               Browse Marketplace
             </button>
           </div>
