@@ -74,26 +74,33 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
           </div>
         </div>
         
-        <p className="text-gray-600 text-sm mb-4 leading-relaxed">{app.description}</p>
+        <p className="text-gray-600 text-sm mb-6 leading-relaxed">{app.description}</p>
         
-        {/* Rating and Reviews */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex">
-              {renderStars(app.rating)}
+        {/* Professional Rating Section */}
+        <div className="space-y-4 mb-6">
+          {/* App Rating */}
+          <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="flex">
+                {renderStars(app.rating)}
+              </div>
+              <span className="text-sm text-gray-600">
+                {app.rating > 0 ? `${app.rating}/5` : '0/5'} ({app.reviewCount} reviews)
+              </span>
             </div>
-            <span className="text-sm font-medium text-gray-700">
-              {app.rating > 0 ? `${app.rating} (${app.reviewCount})` : `0 (${app.reviewCount})`}
-            </span>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Your rating:</span>
-            <div className="flex">
-              {renderStars(0, true)}
+          
+          {/* User Rating */}
+          <div className="flex items-center justify-between py-2 px-3 border border-gray-200 rounded-lg">
+            <span className="text-sm font-medium text-gray-700">Your rating:</span>
+            <div className="flex items-center space-x-2">
+              <div className="flex">
+                {renderStars(0, true)}
+              </div>
+              {userRating > 0 && (
+                <span className="text-sm text-yellow-600 font-medium">{userRating}/5</span>
+              )}
             </div>
-            {userRating > 0 && (
-              <span className="text-sm text-yellow-600 font-medium">{userRating}/5</span>
-            )}
           </div>
         </div>
         
