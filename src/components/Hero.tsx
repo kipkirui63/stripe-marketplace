@@ -9,7 +9,7 @@ const Hero = () => {
         <div className="mb-12">
           <div className="flex items-center justify-center mb-6">
             <img 
-              src="/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png" 
+              src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png" 
               alt="CrispAI" 
               className="h-16 w-auto mr-4"
             />

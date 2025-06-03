@@ -24,7 +24,7 @@ const MarketplaceHero = () => {
             <div className="w-80 h-40 bg-white/10 rounded-lg flex items-center justify-center">
               <div className="flex items-center space-x-4">
                 <img 
-                  src="/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png" 
+                  src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png" 
                   alt="CrispAI" 
                   className="h-16 w-auto"
                 />

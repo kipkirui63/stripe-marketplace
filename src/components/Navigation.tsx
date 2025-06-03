@@ -17,7 +17,7 @@ const Navigation = () => {
             {/* Logo */}
             <Link to="/marketplace" className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png" 
+                src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png" 
                 alt="CrispAI" 
                 className="h-8 w-auto"
               />
