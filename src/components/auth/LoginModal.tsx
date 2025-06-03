@@ -17,6 +17,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -39,13 +40,33 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
       return;
     }
 
-    if (isRegister && (!firstName || !lastName)) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in your first and last name.",
-        variant: "destructive",
-      });
-      return;
+    if (isRegister) {
+      if (!firstName || !lastName || !phone) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        toast({
+          title: "Validation Error",
+          description: "Passwords do not match.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (password.length < 6) {
+        toast({
+          title: "Validation Error",
+          description: "Password must be at least 6 characters long.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -68,6 +89,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
       // Clear form
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
       setFirstName('');
       setLastName('');
       setPhone('');
@@ -109,7 +131,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                  First Name
+                  First Name <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -120,7 +142,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                     onChange={(e) => setFirstName(e.target.value)}
                     className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     placeholder="John"
-                    required={isRegister}
+                    required
                     disabled={isLoading}
                   />
                 </div>
@@ -128,7 +150,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -139,7 +161,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                     onChange={(e) => setLastName(e.target.value)}
                     className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     placeholder="Doe"
-                    required={isRegister}
+                    required
                     disabled={isLoading}
                   />
                 </div>
@@ -149,7 +171,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address
+              Email Address <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -169,7 +191,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
           {isRegister && (
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                Phone Number <span className="text-gray-400">(optional)</span>
+                Phone Number <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -180,6 +202,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
                   onChange={(e) => setPhone(e.target.value)}
                   className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   placeholder="+1 (555) 000-0000"
+                  required
                   disabled={isLoading}
                 />
               </div>
@@ -188,7 +211,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
           
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
+              Password <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -205,6 +228,28 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
               />
             </div>
           </div>
+
+          {isRegister && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Repeat Password <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-10 h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                  minLength={6}
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             type="submit"
