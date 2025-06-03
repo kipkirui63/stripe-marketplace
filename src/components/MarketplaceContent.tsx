@@ -69,7 +69,7 @@ const MarketplaceContent = () => {
       reviewCount: 20,
       badge: 'Best Value',
       badgeColor: 'bg-orange-500',
-      icon: '/lovable-uploads/7de4bd60-8000-41fa-a8e4-5637d9bfdf5c.png',
+      icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
       backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
       agentUrl: '' // To be updated later
     },
