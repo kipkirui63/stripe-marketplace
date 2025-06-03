@@ -76,25 +76,12 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         
         <p className="text-gray-600 text-sm mb-4 leading-relaxed">{app.description}</p>
         
-        {/* Rating and Reviews */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-          <div className="flex items-center space-x-2">
-            <div className="flex">
-              {renderStars(app.rating)}
-            </div>
-            <span className="text-sm font-medium text-gray-700">
-              ({app.reviewCount})
-            </span>
+        {/* Rating - Interactive Stars */}
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="flex">
+            {renderStars(userRating || 0, true)}
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Your rating:</span>
-            <div className="flex">
-              {renderStars(0, true)}
-            </div>
-            {userRating > 0 && (
-              <span className="text-sm text-yellow-600 font-medium">{userRating}/5</span>
-            )}
-          </div>
+          <span className="text-sm text-gray-600">({app.reviewCount})</span>
         </div>
         
         {/* Action Button */}
