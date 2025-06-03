@@ -16,11 +16,11 @@ const Navigation = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/marketplace" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-full relative">
-                  <div className="absolute inset-1 bg-blue-500 rounded-full"></div>
-                </div>
-              </div>
+              <img 
+                src="/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png" 
+                alt="CrispAI" 
+                className="h-8 w-auto"
+              />
               <span className="text-xl font-bold text-gray-900">CrispAI Marketplace</span>
             </Link>
 

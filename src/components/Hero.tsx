@@ -8,11 +8,11 @@ const Hero = () => {
         {/* Main Logo and Title */}
         <div className="mb-12">
           <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-              <div className="w-10 h-10 bg-white rounded-full relative">
-                <div className="absolute inset-2 bg-blue-500 rounded-full"></div>
-              </div>
-            </div>
+            <img 
+              src="/lovable-uploads/e51e943f-bfe0-4391-979e-5c0566e7fa23.png" 
+              alt="CrispAI" 
+              className="h-16 w-auto mr-4"
+            />
             <div>
               <h1 className="text-5xl md:text-6xl font-bold text-blue-600 mb-2">
                 Crisp AI
