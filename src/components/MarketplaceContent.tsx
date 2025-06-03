@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
@@ -54,7 +55,7 @@ const MarketplaceContent = () => {
       reviewCount: 15,
       badge: 'New',
       badgeColor: 'bg-green-500',
-      icon: '/lovable-uploads/7b72063e-9cd7-4e40-8b15-390ea27053e1.png',
+      icon: '/lovable-uploads/4d97bc8a-c3f5-40eb-807d-b6745199d8dd.png',
       backgroundGradient: 'bg-gradient-to-br from-green-400 to-blue-500',
       agentUrl: 'https://workflow.getmindpal.com/67751ba8f77a6fddb63cd44e'
     },
