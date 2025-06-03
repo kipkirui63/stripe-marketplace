@@ -55,12 +55,12 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* App Header with Image/Icon */}
-      <div className={`relative h-48 ${app.backgroundGradient} flex items-center justify-center`}>
+      <div className={`relative h-64 ${app.backgroundGradient} flex items-center justify-center p-8`}>
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded`}>
           {app.badge}
         </div>
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <img src={app.icon} alt={app.name} className="w-20 h-20 object-contain" />
+        <div className="bg-white rounded-xl p-8 shadow-sm w-full h-full flex items-center justify-center">
+          <img src={app.icon} alt={app.name} className="w-32 h-32 object-contain" />
         </div>
       </div>
       
