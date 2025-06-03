@@ -1,5 +1,6 @@
+// checkout.ts (React frontend utils)
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://crispai.crispvision.org/v1/api';
 
 interface CheckoutRequest {
   token: string;
@@ -11,17 +12,17 @@ interface CheckoutResponse {
 }
 
 export const createCheckoutSession = async (token: string, product: string): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/create-checkout`, {
+  const response = await fetch(`${API_BASE_URL}/checkout/create`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ 
-      token, 
+    body: JSON.stringify({
+      token,
       product,
       success_url: `${window.location.origin}/marketplace`,
       cancel_url: `${window.location.origin}/marketplace`
-    }),
+    })
   });
 
   if (!response.ok) {
@@ -42,6 +43,6 @@ export const getProductKey = (appName: string): string => {
     'SOP Assistant': 'sop_agent',
     'Resume Analyzer': 'resume_analyzer'
   };
-  
+
   return productMapping[appName] || appName.toLowerCase().replace(/\s+/g, '_');
 };
