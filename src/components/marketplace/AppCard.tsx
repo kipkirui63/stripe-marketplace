@@ -49,6 +49,9 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     return stars;
   };
 
+  // Calculate dynamic review count - if user has rated, add 1 to base count
+  const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* App Header with Image/Icon */}
@@ -81,7 +84,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
           <div className="flex">
             {renderStars(userRating || 0, true)}
           </div>
-          <span className="text-sm text-gray-600">({app.reviewCount})</span>
+          <span className="text-sm text-gray-600">({displayReviewCount})</span>
         </div>
         
         {/* Action Button */}
