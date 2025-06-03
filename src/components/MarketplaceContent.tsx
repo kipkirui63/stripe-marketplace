@@ -41,7 +41,7 @@ const MarketplaceContent = () => {
       reviewCount: 18,
       badge: 'Popular',
       badgeColor: 'bg-blue-500',
-      icon: '/lovable-uploads/2284d8b0-4266-444a-8a5a-05b6701d561b.png',
+      icon: '/lovable-uploads/db8496d5-abfd-475d-acfa-4ec1a30bb1e6.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
       agentUrl: '' // To be updated later
     },
