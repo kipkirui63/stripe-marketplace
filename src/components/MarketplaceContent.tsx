@@ -82,7 +82,7 @@ const MarketplaceContent = () => {
       reviewCount: 16,
       badge: 'Trending',
       badgeColor: 'bg-purple-500',
-      icon: '/lovable-uploads/9da10f5d-9bed-40ae-aff5-2124ff4ee4c2.png',
+      icon: '/lovable-uploads/e3d9814f-4b52-429f-8456-40b09db8f73a.png',
       backgroundGradient: 'bg-gradient-to-br from-purple-400 to-pink-500',
       agentUrl: 'https://workflow.getmindpal.com/sop-agent-workflow-avlkgrhad7x0xazm'
     },
