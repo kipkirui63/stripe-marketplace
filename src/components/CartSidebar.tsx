@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -121,7 +122,8 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
             <div className="space-y-4">
               {cartItems.map((item) => (
                 <div key={item.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3">
+                    <img src={item.icon} alt={item.name} className="w-12 h-12 object-contain flex-shrink-0" />
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 mb-2">{item.name}</h3>
                       <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
