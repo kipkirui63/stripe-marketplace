@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -75,8 +74,17 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         await register(email, password);
         toast({
           title: "Registration Successful",
-          description: "You have been registered and logged in.",
+          description: "Account created successfully! Please sign in to continue.",
         });
+        
+        // Clear form and switch to login
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
+        setPhone('');
+        setIsRegister(false);
       } else {
         console.log('Attempting login...');
         await login(email, password);
@@ -84,17 +92,17 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
           title: "Login Successful", 
           description: "Welcome back!",
         });
+        
+        // Clear form and close modal
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
+        setPhone('');
+        onClose();
+        onSuccess?.();
       }
-      
-      // Clear form
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setFirstName('');
-      setLastName('');
-      setPhone('');
-      onClose();
-      onSuccess?.();
     } catch (error) {
       console.error('Auth error in modal:', error);
       toast({
