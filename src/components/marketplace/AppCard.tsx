@@ -59,11 +59,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded`}>
           {app.badge}
         </div>
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <div className="flex items-center space-x-3">
-            <img src={app.icon} alt={app.name} className="w-12 h-12 object-contain" />
-            <div className="text-xl font-bold text-gray-900">{app.name}</div>
-          </div>
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <img src={app.icon} alt={app.name} className="w-20 h-20 object-contain" />
         </div>
       </div>
       
