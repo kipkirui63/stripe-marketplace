@@ -39,7 +39,13 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
   }, 0);
 
   const handleCheckout = async () => {
+    console.log('Checkout button clicked');
+    console.log('User:', user);
+    console.log('Token:', token ? 'Present' : 'Missing');
+    console.log('Cart items:', cartItems.length);
+
     if (!user || !token) {
+      console.log('User not authenticated, showing login modal');
       setIsLoginModalOpen(true);
       return;
     }
@@ -60,7 +66,17 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
       const firstItem = cartItems[0];
       const productKey = getProductKey(firstItem.name);
       
+      console.log('Processing checkout for:', firstItem.name);
+      console.log('Product key:', productKey);
+      
+      toast({
+        title: "Creating checkout session...",
+        description: "Please wait while we prepare your payment.",
+      });
+      
       const checkoutUrl = await createCheckoutSession(token, productKey);
+      
+      console.log('Checkout URL received:', checkoutUrl);
       
       // Open Stripe checkout in a new tab
       window.open(checkoutUrl, '_blank');
@@ -70,9 +86,11 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
         description: "Opening Stripe checkout in a new tab...",
       });
     } catch (error) {
+      console.error('Checkout error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to start checkout process";
       toast({
         title: "Checkout Error",
-        description: error instanceof Error ? error.message : "Failed to start checkout process",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -154,9 +172,9 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
             <button 
               onClick={handleCheckout}
               disabled={isProcessing}
-              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50"
+              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
+              {isProcessing ? 'Creating checkout session...' : 'Proceed to Checkout'}
             </button>
             {!user && (
               <p className="text-sm text-gray-600 text-center">
