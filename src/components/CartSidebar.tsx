@@ -88,9 +88,18 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
     } catch (error) {
       console.error('Checkout error:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to start checkout process";
+      
+      // Show more specific error message based on the error type
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes('Server error (500)')) {
+        userFriendlyMessage = "The payment service is currently experiencing issues. Please try again in a few minutes.";
+      } else if (errorMessage.includes('Failed to fetch')) {
+        userFriendlyMessage = "Network connection issue. Please check your internet connection and try again.";
+      }
+      
       toast({
         title: "Checkout Error",
-        description: errorMessage,
+        description: userFriendlyMessage,
         variant: "destructive",
       });
     } finally {
