@@ -31,15 +31,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
   const { hasAccess, isLoading, checkSubscription } = useSubscription();
   
-  // Debug logging with more detail
-  console.log(`🎴 AppCard for ${app.name} - DETAILED:`, {
-    user: !!user,
-    hasAccess,
-    isLoading,
-    isComingSoon: app.isComingSoon,
-    timestamp: new Date().toISOString()
-  });
-  
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
     const currentRating = interactive ? userRating : rating;
@@ -79,14 +70,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     }
     
     console.log('🔍 Checking subscription before opening agent...');
-    console.log('🔍 Current hasAccess before check:', hasAccess);
-    
-    // Always check subscription status before opening agent
     await checkSubscription();
-    
-    // Note: We need to check the updated state after the async call
-    // The hasAccess state might not be immediately updated due to React's async nature
-    console.log('🔍 hasAccess after subscription check:', hasAccess);
     
     if (!hasAccess) {
       console.log('❌ Access denied after subscription check');
@@ -96,17 +80,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     
     console.log('✅ Access granted, opening agent');
     if (app.agentUrl) {
-      // Open in new window/tab with focus check
-      const agentWindow = window.open(app.agentUrl, '_blank');
-      
-      // Set up periodic checking while agent window is open
-      const checkInterval = setInterval(async () => {
-        if (agentWindow && !agentWindow.closed) {
-          await checkSubscription();
-        } else {
-          clearInterval(checkInterval);
-        }
-      }, 2 * 60 * 1000); // Check every 2 minutes while agent is open
+      window.open(app.agentUrl, '_blank');
     }
   };
 
@@ -135,7 +109,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     }
 
     if (hasAccess) {
-      console.log(`✅ Showing Access App button for ${app.name} - hasAccess: ${hasAccess}`);
       return (
         <button 
           onClick={handleAgentClick}
@@ -147,7 +120,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       );
     }
 
-    console.log(`🔒 Showing Subscribe button for ${app.name} - hasAccess: ${hasAccess}`);
     return (
       <button 
         onClick={() => onAddToCart(app)}
@@ -162,15 +134,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
-  // Debug the lock condition with more detail
-  const shouldShowLock = !hasAccess && !app.isComingSoon && user;
-  console.log(`🔐 Lock condition for ${app.name} - DETAILED:`, {
-    shouldShowLock,
-    hasAccess,
-    isComingSoon: app.isComingSoon,
-    user: !!user,
-    calculation: `!${hasAccess} && !${app.isComingSoon} && ${!!user} = ${shouldShowLock}`
-  });
+  // Fixed lock condition - only show lock if user is logged in, doesn't have access, and it's not coming soon
+  const shouldShowLock = user && !hasAccess && !app.isComingSoon;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
