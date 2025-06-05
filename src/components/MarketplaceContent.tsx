@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
@@ -30,7 +31,7 @@ const MarketplaceContent = () => {
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
-  // Updated apps data with correct URLs and CrispWrite marked as coming soon
+  // Updated apps data with correct URLs and CrispWrite reviews set to 0
   const allApps: App[] = [
     {
       id: 1,
@@ -67,7 +68,7 @@ const MarketplaceContent = () => {
       price: '$89.99',
       freeTrialDays: '7-day free trial',
       rating: 0,
-      reviewCount: 20,
+      reviewCount: 0,
       badge: 'Coming Soon',
       badgeColor: 'bg-gray-500',
       icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
