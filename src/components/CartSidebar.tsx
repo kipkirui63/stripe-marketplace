@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, ShoppingCart, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,103 +43,107 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
     console.log('🔍 Checking current subscription status before checkout...');
     await checkSubscription();
     
-    // Re-check hasAccess after the subscription check
-    if (hasAccess) {
-      toast({
-        title: "Already Subscribed",
-        description: "You already have access to all apps. No need to purchase again!",
-      });
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Please add items to your cart before checkout.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Filter out coming soon items
-    const availableItems = cartItems.filter(item => !item.isComingSoon);
-    
-    if (availableItems.length === 0) {
-      toast({
-        title: "No Available Items",
-        description: "All items in your cart are coming soon.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Use the first available item for checkout
-      const firstItem = availableItems[0];
-      const productKey = getProductKey(firstItem.name);
-      
-      console.log('Creating checkout session for:', firstItem.name, 'Product key:', productKey);
-      
-      const checkoutUrl = await createCheckoutSession(token, productKey);
-      
-      console.log('Checkout URL received:', checkoutUrl);
-      
-      // Open Stripe checkout in a new tab
-      const checkoutWindow = window.open(checkoutUrl, '_blank');
-      
-      // Clear cart immediately after opening checkout
-      onClearCart();
-      
-      // Close cart sidebar
-      onClose();
-      
-      // Monitor the checkout window and refresh subscription when it closes
-      const checkWindowClosed = setInterval(async () => {
-        if (checkoutWindow && checkoutWindow.closed) {
-          clearInterval(checkWindowClosed);
-          console.log('Checkout window closed, checking subscription status...');
-          
-          // Wait a bit for payment processing, then check subscription
-          setTimeout(async () => {
-            await checkSubscription();
-            toast({
-              title: "Subscription Updated",
-              description: "Your subscription status has been refreshed.",
-            });
-          }, 3000); // Increased wait time for payment processing
-        }
-      }, 1000);
-      
-      toast({
-        title: "Redirecting to Checkout",
-        description: "Opening Stripe checkout in a new tab...",
-      });
-      
-    } catch (error) {
-      console.error('Checkout error details:', error);
-      
-      let errorMessage = 'An unexpected error occurred during checkout.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
-          errorMessage = 'Payment service is currently unavailable. Please try again later.';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        } else {
-          errorMessage = error.message;
-        }
+    // Wait a moment for state to update, then check hasAccess
+    setTimeout(async () => {
+      if (hasAccess) {
+        toast({
+          title: "Already Subscribed",
+          description: "You already have access to all apps. No need to purchase again!",
+        });
+        return;
       }
+
+      if (cartItems.length === 0) {
+        toast({
+          title: "Empty Cart",
+          description: "Please add items to your cart before checkout.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Filter out coming soon items
+      const availableItems = cartItems.filter(item => !item.isComingSoon);
       
-      toast({
-        title: "Checkout Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+      if (availableItems.length === 0) {
+        toast({
+          title: "No Available Items",
+          description: "All items in your cart are coming soon.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsProcessing(true);
+
+      try {
+        // Use the first available item for checkout
+        const firstItem = availableItems[0];
+        const productKey = getProductKey(firstItem.name);
+        
+        console.log('Creating checkout session for:', firstItem.name, 'Product key:', productKey);
+        
+        const checkoutUrl = await createCheckoutSession(token, productKey);
+        
+        console.log('Checkout URL received:', checkoutUrl);
+        
+        // Open Stripe checkout in a new tab
+        const checkoutWindow = window.open(checkoutUrl, '_blank');
+        
+        // Clear cart immediately after opening checkout
+        onClearCart();
+        
+        // Close cart sidebar
+        onClose();
+        
+        // Monitor the checkout window and refresh subscription when it closes
+        const checkWindowClosed = setInterval(async () => {
+          if (checkoutWindow && checkoutWindow.closed) {
+            clearInterval(checkWindowClosed);
+            console.log('Checkout window closed, checking subscription status...');
+            
+            // Multiple subscription checks for reliability
+            await checkSubscription();
+            setTimeout(async () => {
+              console.log('🔄 Second subscription check after window close');
+              await checkSubscription();
+            }, 2000);
+            setTimeout(async () => {
+              console.log('🔄 Final subscription check after window close');
+              await checkSubscription();
+            }, 5000);
+          }
+        }, 1000);
+        
+        toast({
+          title: "Redirecting to Checkout",
+          description: "Opening Stripe checkout in a new tab...",
+        });
+        
+      } catch (error) {
+        console.error('Checkout error details:', error);
+        
+        let errorMessage = 'An unexpected error occurred during checkout.';
+        
+        if (error instanceof Error) {
+          if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+            errorMessage = 'Payment service is currently unavailable. Please try again later.';
+          } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Network error. Please check your connection and try again.';
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        
+        toast({
+          title: "Checkout Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 500); // Give checkSubscription time to update state
   };
 
   const handleManualRefresh = async () => {

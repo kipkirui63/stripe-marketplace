@@ -54,8 +54,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       console.log('📦 Subscription check response:', data);
       
       const newHasAccess = data.has_access || false;
-      console.log('🔐 Setting hasAccess to:', newHasAccess);
-      console.log('🔐 Previous hasAccess was:', hasAccess);
+      console.log('🔐 Setting hasAccess from', hasAccess, 'to', newHasAccess);
       
       setHasAccess(newHasAccess);
       
@@ -79,33 +78,34 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriptionExpiry(null);
     } finally {
       setIsLoading(false);
-      console.log('✅ Subscription check completed - Final hasAccess:', hasAccess);
+      console.log('✅ Subscription check completed');
     }
   };
 
-  // Check for Stripe success redirect immediately on mount and URL changes
+  // Check for Stripe success redirect immediately on mount
   useEffect(() => {
-    const checkForPaymentSuccess = async () => {
-      const queryParams = new URLSearchParams(window.location.search);
-      const isPaymentSuccess = queryParams.get('status') === 'success' || 
-                              queryParams.get('success') === 'true' ||
-                              queryParams.get('session_id'); // Stripe also adds session_id
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPaymentSuccess = urlParams.get('status') === 'success' || 
+                            urlParams.get('success') === 'true' ||
+                            urlParams.get('session_id');
+    
+    if (isPaymentSuccess && token && user) {
+      console.log('🎉 Payment success detected in URL - checking subscription immediately');
       
-      if (isPaymentSuccess && token && user) {
-        console.log('🎉 Payment success detected - checking subscription immediately');
-        
-        // Clear the URL parameters to prevent repeated checks
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Wait a moment for payment processing, then check subscription
-        setTimeout(async () => {
-          await checkSubscription();
-        }, 2000);
-      }
-    };
-
-    checkForPaymentSuccess();
-  }, [token, user, window.location.search]);
+      // Clear the URL parameters immediately
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Check subscription immediately, then again after a delay
+      checkSubscription().then(() => {
+        console.log('💡 First subscription check completed, scheduling follow-up check');
+        setTimeout(() => {
+          console.log('🔄 Follow-up subscription check after payment');
+          checkSubscription();
+        }, 3000);
+      });
+    }
+  }, [token, user]);
 
   // Setup periodic checking
   useEffect(() => {
