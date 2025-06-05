@@ -31,12 +31,13 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
   const { hasAccess, isLoading, checkSubscription } = useSubscription();
   
-  // Debug logging
-  console.log(`🎴 AppCard for ${app.name}:`, {
+  // Debug logging with more detail
+  console.log(`🎴 AppCard for ${app.name} - DETAILED:`, {
     user: !!user,
     hasAccess,
     isLoading,
-    isComingSoon: app.isComingSoon
+    isComingSoon: app.isComingSoon,
+    timestamp: new Date().toISOString()
   });
   
   const renderStars = (rating: number, interactive: boolean = false) => {
@@ -78,8 +79,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     }
     
     console.log('🔍 Checking subscription before opening agent...');
+    console.log('🔍 Current hasAccess before check:', hasAccess);
+    
     // Always check subscription status before opening agent
     await checkSubscription();
+    
+    // Note: We need to check the updated state after the async call
+    // The hasAccess state might not be immediately updated due to React's async nature
+    console.log('🔍 hasAccess after subscription check:', hasAccess);
     
     if (!hasAccess) {
       console.log('❌ Access denied after subscription check');
@@ -128,7 +135,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     }
 
     if (hasAccess) {
-      console.log(`✅ Showing Access App button for ${app.name}`);
+      console.log(`✅ Showing Access App button for ${app.name} - hasAccess: ${hasAccess}`);
       return (
         <button 
           onClick={handleAgentClick}
@@ -140,7 +147,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       );
     }
 
-    console.log(`🔒 Showing Subscribe button for ${app.name}`);
+    console.log(`🔒 Showing Subscribe button for ${app.name} - hasAccess: ${hasAccess}`);
     return (
       <button 
         onClick={() => onAddToCart(app)}
@@ -155,13 +162,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
-  // Debug the lock condition
+  // Debug the lock condition with more detail
   const shouldShowLock = !hasAccess && !app.isComingSoon && user;
-  console.log(`🔐 Lock condition for ${app.name}:`, {
+  console.log(`🔐 Lock condition for ${app.name} - DETAILED:`, {
     shouldShowLock,
     hasAccess,
     isComingSoon: app.isComingSoon,
-    user: !!user
+    user: !!user,
+    calculation: `!${hasAccess} && !${app.isComingSoon} && ${!!user} = ${shouldShowLock}`
   });
 
   return (
@@ -174,6 +182,9 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         {shouldShowLock && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
             <Lock className="w-12 h-12 text-white" />
+            <div className="absolute bottom-4 left-4 right-4 text-white text-sm text-center">
+              Subscribe to unlock
+            </div>
           </div>
         )}
         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
@@ -184,14 +195,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className="flex items-center justify-between mb-2">
           <h3 
             className={`font-bold text-xl transition-colors ${
-              app.agentUrl && !app.isComingSoon
+              app.agentUrl && !app.isComingSoon && hasAccess
                 ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
                 : 'text-gray-900'
             }`}
-            onClick={app.agentUrl && !app.isComingSoon ? handleAgentClick : undefined}
+            onClick={app.agentUrl && !app.isComingSoon && hasAccess ? handleAgentClick : undefined}
           >
             {app.name}
-            {app.agentUrl && !app.isComingSoon && <ExternalLink className="w-4 h-4" />}
+            {app.agentUrl && !app.isComingSoon && hasAccess && <ExternalLink className="w-4 h-4" />}
           </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{app.price}</div>

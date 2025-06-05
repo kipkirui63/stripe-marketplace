@@ -55,6 +55,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       
       const newHasAccess = data.has_access || false;
       console.log('🔐 Setting hasAccess to:', newHasAccess);
+      console.log('🔐 Previous hasAccess was:', hasAccess);
       
       setHasAccess(newHasAccess);
       
@@ -78,9 +79,20 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriptionExpiry(null);
     } finally {
       setIsLoading(false);
-      console.log('✅ Subscription check completed');
+      console.log('✅ Subscription check completed - Final hasAccess:', hasAccess);
     }
   };
+
+  // Check for Stripe success redirect
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    if (queryParams.get('status') === 'success' || queryParams.get('success') === 'true') {
+      console.log('🎉 Detected successful payment redirect - checking subscription');
+      setTimeout(() => {
+        checkSubscription();
+      }, 1000); // Small delay to ensure backend is updated
+    }
+  }, [token, user]);
 
   // Setup periodic checking
   useEffect(() => {
