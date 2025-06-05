@@ -33,13 +33,13 @@ const MarketplaceHero = () => {
           </div>
           <div className="hidden lg:block">
             <div className="w-80 h-40 bg-white/10 rounded-lg flex items-center justify-center">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4  fill-white">
                 <img 
                   src="/lovable-uploads/4db0eac4-a39c-4fac-9775-eed8e9a4bebb.png" 
                   alt="CrispAI" 
-                  className="h-16 w-auto"
+                  className="h-16 w-auto text-white fill-white"
                 />
-                <span className="text-white text-3xl font-bold">CrispAI</span>
+              
               </div>
             </div>
           </div>
