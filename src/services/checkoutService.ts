@@ -1,3 +1,4 @@
+
 const API_BASE_URL = 'http://127.0.0.1:5500';
 
 interface CheckoutResponse {
@@ -29,4 +30,16 @@ export const getProductKey = (appName: string): string => {
     'Resume Analyzer': 'resume_analyzer',
   };
   return productMapping[appName] || appName.toLowerCase().replace(/\s+/g, '_');
+};
+
+// Map app names to tool IDs that match your backend database
+export const getToolId = (appName: string): string => {
+  const toolIdMapping: { [key: string]: string } = {
+    'Business Intelligence Agent': '1',
+    'AI Recruitment Assistant': '2', 
+    'CrispWrite': '3',
+    'SOP Assistant': '4',
+    'Resume Analyzer': '5',
+  };
+  return toolIdMapping[appName] || '1';
 };
