@@ -3,9 +3,10 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { useAuth } from './AuthContext';
 
 interface SubscriptionContextType {
-  hasAccess: boolean;
+  purchasedApps: string[];
   isLoading: boolean;
   checkSubscription: () => Promise<void>;
+  hasPurchased: (appName: string) => boolean;
   subscriptionExpiry: string | null;
 }
 
@@ -20,11 +21,15 @@ export const useSubscription = () => {
 const API_BASE_URL = 'http://127.0.0.1:5500';
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [hasAccess, setHasAccess] = useState(false);
+  const [purchasedApps, setPurchasedApps] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
   const { token, user } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const hasPurchased = (appName: string) => {
+    return purchasedApps.includes(appName);
+  };
 
   const checkSubscription = async () => {
     console.log('🔄 Starting subscription check...');
@@ -32,8 +37,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     console.log('Token:', token ? 'exists' : 'missing');
     
     if (!token || !user) {
-      console.log('❌ No token or user - setting access to false');
-      setHasAccess(false);
+      console.log('❌ No token or user - clearing purchased apps');
+      setPurchasedApps([]);
       setSubscriptionExpiry(null);
       return;
     }
@@ -53,28 +58,22 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const data = await response.json();
       console.log('📦 Subscription check response:', data);
       
-      const newHasAccess = data.has_access || false;
-      console.log('🔐 Setting hasAccess from', hasAccess, 'to', newHasAccess);
+      // Expect the backend to return purchased_apps array instead of has_access
+      const newPurchasedApps = data.purchased_apps || [];
+      console.log('🔐 Setting purchasedApps from', purchasedApps, 'to', newPurchasedApps);
       
-      setHasAccess(newHasAccess);
+      setPurchasedApps(newPurchasedApps);
       
-      // If user has access, we can store expiry info if provided by backend
-      if (newHasAccess && data.subscription_end) {
+      if (data.subscription_end) {
         console.log('📅 Setting subscription expiry:', data.subscription_end);
         setSubscriptionExpiry(data.subscription_end);
       } else {
         setSubscriptionExpiry(null);
       }
       
-      // If subscription expired, show alert and redirect away from agent pages
-      if (!newHasAccess && window.location.pathname.includes('agent')) {
-        alert('Your subscription has expired. Please renew to continue accessing this app.');
-        window.location.href = '/marketplace';
-      }
-      
     } catch (error) {
       console.error('💥 Subscription check failed:', error);
-      setHasAccess(false);
+      setPurchasedApps([]);
       setSubscriptionExpiry(null);
     } finally {
       setIsLoading(false);
@@ -122,7 +121,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       
     } else {
       console.log('🔒 No user or token, clearing access');
-      setHasAccess(false);
+      setPurchasedApps([]);
       setSubscriptionExpiry(null);
       
       // Clear interval when user logs out
@@ -153,10 +152,16 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [token, user]);
 
-  console.log('🎯 Current subscription state - hasAccess:', hasAccess, 'isLoading:', isLoading);
+  console.log('🎯 Current subscription state - purchasedApps:', purchasedApps, 'isLoading:', isLoading);
 
   return (
-    <SubscriptionContext.Provider value={{ hasAccess, isLoading, checkSubscription, subscriptionExpiry }}>
+    <SubscriptionContext.Provider value={{ 
+      purchasedApps, 
+      isLoading, 
+      checkSubscription, 
+      hasPurchased, 
+      subscriptionExpiry 
+    }}>
       {children}
     </SubscriptionContext.Provider>
   );

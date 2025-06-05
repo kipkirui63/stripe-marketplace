@@ -29,7 +29,9 @@ interface AppCardProps {
 
 const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
-  const { hasAccess, isLoading, checkSubscription } = useSubscription();
+  const { hasPurchased, isLoading, checkSubscription } = useSubscription();
+  
+  const hasAccessToApp = hasPurchased(app.name);
   
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
@@ -69,8 +71,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     
     await checkSubscription();
     
-    if (!hasAccess) {
-      alert('Your subscription has expired or is inactive. Please subscribe to access this agent.');
+    if (!hasPurchased(app.name)) {
+      alert(`You need to purchase ${app.name} to access this agent.`);
       return;
     }
     
@@ -103,7 +105,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       );
     }
 
-    if (hasAccess) {
+    if (hasAccessToApp) {
       return (
         <button 
           onClick={handleAgentClick}
@@ -121,7 +123,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
       >
         <ShoppingCart className="w-4 h-4" />
-        <span>Subscribe to Access</span>
+        <span>Purchase App</span>
       </button>
     );
   };
@@ -136,6 +138,12 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
           {app.badge}
         </div>
+        {/* Show purchased indicator for owned apps */}
+        {user && hasAccessToApp && !app.isComingSoon && (
+          <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
+            Owned
+          </div>
+        )}
         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
       </div>
       
@@ -144,14 +152,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className="flex items-center justify-between mb-2">
           <h3 
             className={`font-bold text-xl transition-colors ${
-              app.agentUrl && !app.isComingSoon && hasAccess
+              app.agentUrl && !app.isComingSoon && hasAccessToApp
                 ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
                 : 'text-gray-900'
             }`}
-            onClick={app.agentUrl && !app.isComingSoon && hasAccess ? handleAgentClick : undefined}
+            onClick={app.agentUrl && !app.isComingSoon && hasAccessToApp ? handleAgentClick : undefined}
           >
             {app.name}
-            {app.agentUrl && !app.isComingSoon && hasAccess && <ExternalLink className="w-4 h-4" />}
+            {app.agentUrl && !app.isComingSoon && hasAccessToApp && <ExternalLink className="w-4 h-4" />}
           </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{app.price}</div>
