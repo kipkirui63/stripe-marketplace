@@ -21,7 +21,7 @@ const Navigation = () => {
                 alt="CrispAI" 
                 className="h-8 w-auto"
               />
-              <span className="text-xl font-bold text-gray-900">CrispAI Marketplace</span>
+              <span className="text-xl font-bold text-gray-900"></span>
             </Link>
 
             {/* Navigation Links */}
