@@ -6,9 +6,11 @@ interface CheckoutResponse {
 }
 
 // Use query parameters to match Flask backend expectation
-export const createCheckoutSession = async (token: string, product: string): Promise<string> => {
+export const createCheckoutSession = async (token: string, appName: string): Promise<string> => {
+  const toolId = getToolId(appName);
+  
   const response = await fetch(
-    `${API_BASE_URL}/stripe/create-checkout?token=${encodeURIComponent(token)}&product=${encodeURIComponent(product)}`,
+    `${API_BASE_URL}/stripe/create-checkout?token=${encodeURIComponent(token)}&tool_id=${encodeURIComponent(toolId)}`,
     { method: 'POST' }
   );
 

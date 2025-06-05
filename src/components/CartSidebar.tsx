@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { X, ShoppingCart, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { createCheckoutSession, getProductKey } from '../services/checkoutService';
+import { createCheckoutSession } from '../services/checkoutService';
 import { useToast } from '@/hooks/use-toast';
 
 interface App {
@@ -66,11 +66,10 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
     try {
       // Use the first available item for checkout
       const firstItem = availableItems[0];
-      const productKey = getProductKey(firstItem.name);
       
-      console.log('Creating checkout session for:', firstItem.name, 'Product key:', productKey);
+      console.log('Creating checkout session for:', firstItem.name);
       
-      const checkoutUrl = await createCheckoutSession(token, productKey);
+      const checkoutUrl = await createCheckoutSession(token, firstItem.name);
       
       console.log('Checkout URL received:', checkoutUrl);
       

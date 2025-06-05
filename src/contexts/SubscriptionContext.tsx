@@ -58,16 +58,26 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const data = await response.json();
       console.log('📦 Subscription check response:', data);
       
-      // Expect the backend to return purchased_apps array instead of has_access
-      const newPurchasedApps = data.purchased_apps || [];
-      console.log('🔐 Setting purchasedApps from', purchasedApps, 'to', newPurchasedApps);
-      
-      setPurchasedApps(newPurchasedApps);
-      
-      if (data.subscription_end) {
-        console.log('📅 Setting subscription expiry:', data.subscription_end);
-        setSubscriptionExpiry(data.subscription_end);
+      // Your backend returns has_access boolean, so we need to handle this differently
+      // Since your backend only checks for ANY subscription, we'll need to assume all apps if has_access is true
+      if (data.has_access) {
+        console.log('🔐 User has access - setting all apps as purchased');
+        const allApps = [
+          'Business Intelligence Agent',
+          'AI Recruitment Assistant', 
+          'CrispWrite',
+          'SOP Assistant',
+          'Resume Analyzer'
+        ];
+        setPurchasedApps(allApps);
+        
+        // Set a default expiry date since your backend doesn't provide this yet
+        const futureDate = new Date();
+        futureDate.setMonth(futureDate.getMonth() + 1);
+        setSubscriptionExpiry(futureDate.toISOString());
       } else {
+        console.log('🔒 No access - clearing purchased apps');
+        setPurchasedApps([]);
         setSubscriptionExpiry(null);
       }
       
