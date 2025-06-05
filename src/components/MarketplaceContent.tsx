@@ -18,6 +18,7 @@ interface App {
   icon: string;
   backgroundGradient: string;
   agentUrl?: string;
+  isComingSoon?: boolean;
 }
 
 const MarketplaceContent = () => {
@@ -29,7 +30,7 @@ const MarketplaceContent = () => {
 
   const tabs = ['All', 'Analytics', 'Writing', 'Recruitment', 'Business'];
 
-  // Sample apps data with updated prices and trial periods
+  // Updated apps data with correct URLs and CrispWrite marked as coming soon
   const allApps: App[] = [
     {
       id: 1,
@@ -43,7 +44,7 @@ const MarketplaceContent = () => {
       badgeColor: 'bg-blue-500',
       icon: '/lovable-uploads/db8496d5-abfd-475d-acfa-4ec1a30bb1e6.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
-      agentUrl: '' // To be updated later
+      agentUrl: 'https://crispai.crispvision.org/business_agent'
     },
     {
       id: 2,
@@ -67,11 +68,11 @@ const MarketplaceContent = () => {
       freeTrialDays: '7-day free trial',
       rating: 0,
       reviewCount: 20,
-      badge: 'Best Value',
-      badgeColor: 'bg-orange-500',
+      badge: 'Coming Soon',
+      badgeColor: 'bg-gray-500',
       icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
       backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
-      agentUrl: '' // To be updated later
+      isComingSoon: true
     },
     {
       id: 4,

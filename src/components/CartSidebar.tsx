@@ -1,52 +1,49 @@
 
 import React, { useState } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import { X, ShoppingCart, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 import { createCheckoutSession, getProductKey } from '../services/checkoutService';
 import { useToast } from '@/hooks/use-toast';
-import LoginModal from './auth/LoginModal';
 
 interface App {
   id: number;
   name: string;
-  description: string;
   price: string;
-  freeTrialDays: string;
-  rating: number;
-  reviewCount: number;
-  badge: string;
-  badgeColor: string;
   icon: string;
-  backgroundGradient: string;
+  isComingSoon?: boolean;
 }
 
 interface CartSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   cartItems: App[];
-  onRemoveItem: (appId: number) => void;
+  onRemoveItem: (id: number) => void;
 }
 
 const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarProps) => {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { user, token } = useAuth();
+  const { hasAccess, checkSubscription } = useSubscription();
   const { toast } = useToast();
 
-  const totalPrice = cartItems.reduce((total, item) => {
-    const price = parseFloat(item.price.replace('$', ''));
-    return total + price;
-  }, 0);
-
-  const handleCheckout = async () => {
-    console.log('Checkout button clicked');
-    console.log('User:', user);
-    console.log('Token:', token ? 'Present' : 'Missing');
-    console.log('Cart items:', cartItems.length);
+  const handleProceedToCheckout = async () => {
+    console.log('Checkout clicked - User:', !!user, 'Token:', !!token, 'Has Access:', hasAccess);
 
     if (!user || !token) {
-      console.log('User not authenticated, showing login modal');
-      setIsLoginModalOpen(true);
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to proceed with checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (hasAccess) {
+      toast({
+        title: "Already Subscribed",
+        description: "You already have access to all apps. No need to purchase again!",
+      });
       return;
     }
 
@@ -59,20 +56,26 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
       return;
     }
 
+    // Filter out coming soon items
+    const availableItems = cartItems.filter(item => !item.isComingSoon);
+    
+    if (availableItems.length === 0) {
+      toast({
+        title: "No Available Items",
+        description: "All items in your cart are coming soon.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
+
     try {
-      // For now, we'll process the first item in the cart
-      // You can modify this to handle multiple items or create a bundle
-      const firstItem = cartItems[0];
+      // Use the first available item for checkout
+      const firstItem = availableItems[0];
       const productKey = getProductKey(firstItem.name);
       
-      console.log('Processing checkout for:', firstItem.name);
-      console.log('Product key:', productKey);
-      
-      toast({
-        title: "Creating checkout session...",
-        description: "Please wait while we prepare your payment.",
-      });
+      console.log('Creating checkout session for:', firstItem.name, 'Product key:', productKey);
       
       const checkoutUrl = await createCheckoutSession(token, productKey);
       
@@ -81,25 +84,34 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
       // Open Stripe checkout in a new tab
       window.open(checkoutUrl, '_blank');
       
+      // Refresh subscription status after a delay to account for potential checkout completion
+      setTimeout(() => {
+        checkSubscription();
+      }, 5000);
+      
       toast({
         title: "Redirecting to Checkout",
         description: "Opening Stripe checkout in a new tab...",
       });
-    } catch (error) {
-      console.error('Checkout error:', error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to start checkout process";
       
-      // Show more specific error message based on the error type
-      let userFriendlyMessage = errorMessage;
-      if (errorMessage.includes('Server error (500)')) {
-        userFriendlyMessage = "The payment service is currently experiencing issues. Please try again in a few minutes.";
-      } else if (errorMessage.includes('Failed to fetch')) {
-        userFriendlyMessage = "Network connection issue. Please check your internet connection and try again.";
+    } catch (error) {
+      console.error('Checkout error details:', error);
+      
+      let errorMessage = 'An unexpected error occurred during checkout.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+          errorMessage = 'Payment service is currently unavailable. Please try again later.';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       toast({
         title: "Checkout Error",
-        description: userFriendlyMessage,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -107,98 +119,97 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
     }
   };
 
-  const handleLoginSuccess = () => {
-    setIsLoginModalOpen(false);
-    // Automatically trigger checkout after successful login
-    setTimeout(() => {
-      handleCheckout();
-    }, 500);
-  };
+  const total = cartItems
+    .filter(item => !item.isComingSoon)
+    .reduce((sum, item) => sum + parseFloat(item.price.replace('$', '')), 0);
 
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
       
-      {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-lg z-50 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-bold text-gray-900">Shopping Cart</h2>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {cartItems.length === 0 ? (
-            <div className="text-center text-gray-500 mt-8">
-              <p>Your cart is empty</p>
-              <p className="text-sm mt-2">Add some apps to get started!</p>
+      <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center space-x-2">
+              <ShoppingCart className="w-5 h-5" />
+              <h2 className="text-lg font-semibold">Shopping Cart</h2>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {cartItems.map((item) => (
-                <div key={item.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <img src={item.icon} alt={item.name} className="w-12 h-12 object-contain flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-2">{item.name}</h3>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-blue-600">{item.price}</span>
-                        <button
-                          onClick={() => onRemoveItem(item.id)}
-                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Cart Items */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {cartItems.length === 0 ? (
+              <div className="text-center text-gray-500 mt-8">
+                <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>Your cart is empty</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                    <img src={item.icon} alt={item.name} className="w-12 h-12 rounded object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm truncate">{item.name}</h3>
+                      <p className="text-blue-600 font-semibold">{item.price}</p>
+                      {item.isComingSoon && (
+                        <p className="text-gray-500 text-xs">Coming Soon</p>
+                      )}
                     </div>
+                    <button
+                      onClick={() => onRemoveItem(item.id)}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          {cartItems.length > 0 && (
+            <div className="border-t p-6 space-y-4">
+              <div className="flex justify-between items-center font-semibold">
+                <span>Total:</span>
+                <span className="text-xl text-blue-600">${total.toFixed(2)}</span>
+              </div>
+              
+              {hasAccess && (
+                <div className="text-center text-green-600 text-sm font-medium">
+                  ✓ You already have access to all apps
                 </div>
-              ))}
+              )}
+              
+              <button
+                onClick={handleProceedToCheckout}
+                disabled={isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                  isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : hasAccess
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                {isProcessing 
+                  ? 'Processing...' 
+                  : hasAccess 
+                  ? 'Already Subscribed'
+                  : 'Proceed to Checkout'
+                }
+              </button>
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        {cartItems.length > 0 && (
-          <div className="border-t p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Total:</span>
-              <span className="text-2xl font-bold text-blue-600">${totalPrice.toFixed(2)}</span>
-            </div>
-            <button 
-              onClick={handleCheckout}
-              disabled={isProcessing}
-              className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? 'Creating checkout session...' : 'Proceed to Checkout'}
-            </button>
-            {!user && (
-              <p className="text-sm text-gray-600 text-center">
-                You'll need to login to complete your purchase
-              </p>
-            )}
-          </div>
-        )}
       </div>
-      <LoginModal 
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSuccess={handleLoginSuccess}
-      />
-    </>
+    </div>
   );
 };
 

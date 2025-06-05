@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Star, ShoppingCart, ExternalLink } from 'lucide-react';
+import { Star, ShoppingCart, ExternalLink, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 interface App {
   id: number;
@@ -16,6 +17,7 @@ interface App {
   icon: string;
   backgroundGradient: string;
   agentUrl?: string;
+  isComingSoon?: boolean;
 }
 
 interface AppCardProps {
@@ -27,6 +29,7 @@ interface AppCardProps {
 
 const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
+  const { hasAccess, isLoading } = useSubscription();
   
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
@@ -54,16 +57,71 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   };
 
   const handleAgentClick = () => {
+    if (app.isComingSoon) {
+      alert('This app is coming soon!');
+      return;
+    }
+
     if (!user) {
       alert('Please sign in to access the agent');
       return;
     }
     
-    // TODO: Add subscription check here when subscription context is available
-    // For now, we'll allow access if user is logged in
+    if (!hasAccess) {
+      alert('Please subscribe to access this agent');
+      return;
+    }
+    
     if (app.agentUrl) {
       window.open(app.agentUrl, '_blank');
     }
+  };
+
+  const getActionButton = () => {
+    if (app.isComingSoon) {
+      return (
+        <button 
+          disabled
+          className="w-full bg-gray-400 text-white py-3 px-4 rounded-lg cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+        >
+          <span>Coming Soon</span>
+        </button>
+      );
+    }
+
+    if (!user) {
+      return (
+        <button 
+          onClick={() => onAddToCart(app)}
+          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>Add to Cart</span>
+        </button>
+      );
+    }
+
+    if (hasAccess) {
+      return (
+        <button 
+          onClick={handleAgentClick}
+          className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors font-medium flex items-center justify-center space-x-2"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span>Access App</span>
+        </button>
+      );
+    }
+
+    return (
+      <button 
+        onClick={() => onAddToCart(app)}
+        className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
+      >
+        <ShoppingCart className="w-4 h-4" />
+        <span>Subscribe to Access</span>
+      </button>
+    );
   };
 
   // Calculate dynamic review count - if user has rated, add 1 to base count
@@ -76,6 +134,11 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
           {app.badge}
         </div>
+        {!hasAccess && !app.isComingSoon && user && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+            <Lock className="w-12 h-12 text-white" />
+          </div>
+        )}
         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
       </div>
       
@@ -84,14 +147,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className="flex items-center justify-between mb-2">
           <h3 
             className={`font-bold text-xl ${
-              app.agentUrl 
+              app.agentUrl && !app.isComingSoon && user && hasAccess
                 ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
                 : 'text-gray-900'
             } transition-colors`}
-            onClick={app.agentUrl ? handleAgentClick : undefined}
+            onClick={app.agentUrl && !app.isComingSoon && user && hasAccess ? handleAgentClick : undefined}
           >
             {app.name}
-            {app.agentUrl && <ExternalLink className="w-4 h-4" />}
+            {app.agentUrl && !app.isComingSoon && user && hasAccess && <ExternalLink className="w-4 h-4" />}
           </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{app.price}</div>
@@ -110,13 +173,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         </div>
         
         {/* Action Button */}
-        <button 
-          onClick={() => onAddToCart(app)}
-          className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          <span>Add to Cart</span>
-        </button>
+        {getActionButton()}
       </div>
     </div>
   );
