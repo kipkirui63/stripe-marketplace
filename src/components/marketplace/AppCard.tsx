@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Star, ShoppingCart, ExternalLink, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,7 +28,7 @@ interface AppCardProps {
 
 const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
-  const { hasAccess, isLoading } = useSubscription();
+  const { hasAccess, isLoading, checkSubscription } = useSubscription();
   
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
@@ -56,7 +55,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     return stars;
   };
 
-  const handleAgentClick = () => {
+  const handleAgentClick = async () => {
     if (app.isComingSoon) {
       alert('This app is coming soon!');
       return;
@@ -67,13 +66,26 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return;
     }
     
+    // Always check subscription status before opening agent
+    await checkSubscription();
+    
     if (!hasAccess) {
-      alert('Please subscribe to access this agent');
+      alert('Your subscription has expired or is inactive. Please subscribe to access this agent.');
       return;
     }
     
     if (app.agentUrl) {
-      window.open(app.agentUrl, '_blank');
+      // Open in new window/tab with focus check
+      const agentWindow = window.open(app.agentUrl, '_blank');
+      
+      // Set up periodic checking while agent window is open
+      const checkInterval = setInterval(async () => {
+        if (agentWindow && !agentWindow.closed) {
+          await checkSubscription();
+        } else {
+          clearInterval(checkInterval);
+        }
+      }, 2 * 60 * 1000); // Check every 2 minutes while agent is open
     }
   };
 

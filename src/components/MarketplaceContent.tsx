@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import MarketplaceFilters from './marketplace/MarketplaceFilters';
 import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
+import SubscriptionWarning from './SubscriptionWarning';
 
 interface App {
   id: number;
@@ -140,6 +140,8 @@ const MarketplaceContent = () => {
     <>
       <div className="min-h-screen bg-gray-50 pt-16" data-marketplace-content>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <SubscriptionWarning />
+          
           <MarketplaceFilters
             activeTab={activeTab}
             tabs={tabs}
