@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Star, ShoppingCart, ExternalLink, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -158,15 +159,15 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       <div className="p-6">
         <div className="flex items-center justify-between mb-2">
           <h3 
-            className={`font-bold text-xl ${
-              app.agentUrl && !app.isComingSoon && user && hasAccess
+            className={`font-bold text-xl transition-colors ${
+              app.agentUrl && !app.isComingSoon
                 ? 'text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1' 
                 : 'text-gray-900'
-            } transition-colors`}
-            onClick={app.agentUrl && !app.isComingSoon && user && hasAccess ? handleAgentClick : undefined}
+            }`}
+            onClick={app.agentUrl && !app.isComingSoon ? handleAgentClick : undefined}
           >
             {app.name}
-            {app.agentUrl && !app.isComingSoon && user && hasAccess && <ExternalLink className="w-4 h-4" />}
+            {app.agentUrl && !app.isComingSoon && <ExternalLink className="w-4 h-4" />}
           </h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{app.price}</div>
