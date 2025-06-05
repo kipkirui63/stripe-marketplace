@@ -83,16 +83,29 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
-  // Check for Stripe success redirect
+  // Check for Stripe success redirect immediately on mount and URL changes
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    if (queryParams.get('status') === 'success' || queryParams.get('success') === 'true') {
-      console.log('🎉 Detected successful payment redirect - checking subscription');
-      setTimeout(() => {
-        checkSubscription();
-      }, 1000); // Small delay to ensure backend is updated
-    }
-  }, [token, user]);
+    const checkForPaymentSuccess = async () => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const isPaymentSuccess = queryParams.get('status') === 'success' || 
+                              queryParams.get('success') === 'true' ||
+                              queryParams.get('session_id'); // Stripe also adds session_id
+      
+      if (isPaymentSuccess && token && user) {
+        console.log('🎉 Payment success detected - checking subscription immediately');
+        
+        // Clear the URL parameters to prevent repeated checks
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Wait a moment for payment processing, then check subscription
+        setTimeout(async () => {
+          await checkSubscription();
+        }, 2000);
+      }
+    };
+
+    checkForPaymentSuccess();
+  }, [token, user, window.location.search]);
 
   // Setup periodic checking
   useEffect(() => {

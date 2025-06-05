@@ -40,6 +40,11 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
       return;
     }
 
+    // Check subscription status first to prevent double subscriptions
+    console.log('🔍 Checking current subscription status before checkout...');
+    await checkSubscription();
+    
+    // Re-check hasAccess after the subscription check
     if (hasAccess) {
       toast({
         title: "Already Subscribed",
@@ -97,14 +102,14 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
           clearInterval(checkWindowClosed);
           console.log('Checkout window closed, checking subscription status...');
           
-          // Wait a bit for payment processing
+          // Wait a bit for payment processing, then check subscription
           setTimeout(async () => {
             await checkSubscription();
             toast({
-              title: "Checking Subscription",
-              description: "Verifying your payment status...",
+              title: "Subscription Updated",
+              description: "Your subscription status has been refreshed.",
             });
-          }, 2000);
+          }, 3000); // Increased wait time for payment processing
         }
       }, 1000);
       
