@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -18,13 +17,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
-const API_BASE_URL = 'https://crispai.crispvision.org/v1/api';
+const API_BASE_URL = 'http://127.0.0.1:5500';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -72,12 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (firstName: string, lastName: string, email: string, phone: string, password: string) => {
     setIsLoading(true);
     try {
-      console.log('Registration data:', { firstName, lastName, email, phone, password: '***' });
-      
-      if (!firstName || !lastName || !email || !phone || !password) {
-        throw new Error('All required fields must be filled');
-      }
-
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email,
           phone,
           password,
-          repeat_password: password
+          repeat_password: password,
         }),
       });
 
@@ -96,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(error.detail || 'Registration failed');
       }
 
+      // Auto login after registration
       await login(email, password);
     } catch (error) {
       console.error('Registration error:', error);
