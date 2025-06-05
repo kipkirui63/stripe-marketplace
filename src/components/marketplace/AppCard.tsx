@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, ShoppingCart, ExternalLink, Lock } from 'lucide-react';
+import { Star, ShoppingCart, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 
@@ -57,8 +57,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   };
 
   const handleAgentClick = async () => {
-    console.log(`🖱️ Agent click for ${app.name}`);
-    
     if (app.isComingSoon) {
       alert('This app is coming soon!');
       return;
@@ -69,16 +67,13 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return;
     }
     
-    console.log('🔍 Checking subscription before opening agent...');
     await checkSubscription();
     
     if (!hasAccess) {
-      console.log('❌ Access denied after subscription check');
       alert('Your subscription has expired or is inactive. Please subscribe to access this agent.');
       return;
     }
     
-    console.log('✅ Access granted, opening agent');
     if (app.agentUrl) {
       window.open(app.agentUrl, '_blank');
     }
@@ -134,9 +129,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
-  // Fixed lock condition - only show lock if user is logged in, doesn't have access, and it's not coming soon
-  const shouldShowLock = user && !hasAccess && !app.isComingSoon;
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* App Header with Image/Icon */}
@@ -144,14 +136,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
           {app.badge}
         </div>
-        {shouldShowLock && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-            <Lock className="w-12 h-12 text-white" />
-            <div className="absolute bottom-4 left-4 right-4 text-white text-sm text-center">
-              Subscribe to unlock
-            </div>
-          </div>
-        )}
         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
       </div>
       
