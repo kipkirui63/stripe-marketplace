@@ -129,6 +129,11 @@ const MarketplaceContent = () => {
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
 
+  const clearCart = () => {
+    console.log('Clearing cart');
+    setCartItems([]);
+  };
+
   const handleRate = (appId: number, rating: number) => {
     console.log(`Rating app ${appId} with ${rating} stars`);
     setUserRatings(prev => ({
@@ -166,6 +171,7 @@ const MarketplaceContent = () => {
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
         onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
       />
 
       <LoginModal

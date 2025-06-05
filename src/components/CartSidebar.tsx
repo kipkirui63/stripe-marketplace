@@ -19,9 +19,10 @@ interface CartSidebarProps {
   onClose: () => void;
   cartItems: App[];
   onRemoveItem: (id: number) => void;
+  onClearCart: () => void;
 }
 
-const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarProps) => {
+const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user, token } = useAuth();
   const { hasAccess, checkSubscription } = useSubscription();
@@ -82,12 +83,30 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
       console.log('Checkout URL received:', checkoutUrl);
       
       // Open Stripe checkout in a new tab
-      window.open(checkoutUrl, '_blank');
+      const checkoutWindow = window.open(checkoutUrl, '_blank');
       
-      // Refresh subscription status after a delay to account for potential checkout completion
-      setTimeout(() => {
-        checkSubscription();
-      }, 5000);
+      // Clear cart immediately after opening checkout
+      onClearCart();
+      
+      // Close cart sidebar
+      onClose();
+      
+      // Monitor the checkout window and refresh subscription when it closes
+      const checkWindowClosed = setInterval(async () => {
+        if (checkoutWindow && checkoutWindow.closed) {
+          clearInterval(checkWindowClosed);
+          console.log('Checkout window closed, checking subscription status...');
+          
+          // Wait a bit for payment processing
+          setTimeout(async () => {
+            await checkSubscription();
+            toast({
+              title: "Checking Subscription",
+              description: "Verifying your payment status...",
+            });
+          }, 2000);
+        }
+      }, 1000);
       
       toast({
         title: "Redirecting to Checkout",
@@ -116,6 +135,29 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    console.log('Manual subscription refresh triggered');
+    toast({
+      title: "Refreshing Subscription",
+      description: "Checking your subscription status...",
+    });
+    
+    try {
+      await checkSubscription();
+      toast({
+        title: "Subscription Updated",
+        description: "Your subscription status has been refreshed.",
+      });
+    } catch (error) {
+      console.error('Manual refresh error:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to check subscription status. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -148,6 +190,14 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
               <div className="text-center text-gray-500 mt-8">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p>Your cart is empty</p>
+                {user && (
+                  <button
+                    onClick={handleManualRefresh}
+                    className="mt-4 text-blue-500 hover:text-blue-600 text-sm underline"
+                  >
+                    Check Subscription Status
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -187,24 +237,35 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem }: CartSidebarPr
                 </div>
               )}
               
-              <button
-                onClick={handleProceedToCheckout}
-                disabled={isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)}
-                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                  isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : hasAccess
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                }`}
-              >
-                {isProcessing 
-                  ? 'Processing...' 
-                  : hasAccess 
-                  ? 'Already Subscribed'
-                  : 'Proceed to Checkout'
-                }
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={handleProceedToCheckout}
+                  disabled={isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                    isProcessing || cartItems.length === 0 || cartItems.every(item => item.isComingSoon)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : hasAccess
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  {isProcessing 
+                    ? 'Processing...' 
+                    : hasAccess 
+                    ? 'Already Subscribed'
+                    : 'Proceed to Checkout'
+                  }
+                </button>
+                
+                {user && (
+                  <button
+                    onClick={handleManualRefresh}
+                    className="w-full py-2 px-4 rounded-lg font-medium text-blue-500 border border-blue-500 hover:bg-blue-50 transition-colors"
+                  >
+                    Refresh Subscription Status
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
