@@ -31,6 +31,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   const { user } = useAuth();
   const { hasAccess, isLoading, checkSubscription } = useSubscription();
   
+  // Debug logging
+  console.log(`🎴 AppCard for ${app.name}:`, {
+    user: !!user,
+    hasAccess,
+    isLoading,
+    isComingSoon: app.isComingSoon
+  });
+  
   const renderStars = (rating: number, interactive: boolean = false) => {
     const stars = [];
     const currentRating = interactive ? userRating : rating;
@@ -57,6 +65,8 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   };
 
   const handleAgentClick = async () => {
+    console.log(`🖱️ Agent click for ${app.name}`);
+    
     if (app.isComingSoon) {
       alert('This app is coming soon!');
       return;
@@ -67,14 +77,17 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return;
     }
     
+    console.log('🔍 Checking subscription before opening agent...');
     // Always check subscription status before opening agent
     await checkSubscription();
     
     if (!hasAccess) {
+      console.log('❌ Access denied after subscription check');
       alert('Your subscription has expired or is inactive. Please subscribe to access this agent.');
       return;
     }
     
+    console.log('✅ Access granted, opening agent');
     if (app.agentUrl) {
       // Open in new window/tab with focus check
       const agentWindow = window.open(app.agentUrl, '_blank');
@@ -115,6 +128,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     }
 
     if (hasAccess) {
+      console.log(`✅ Showing Access App button for ${app.name}`);
       return (
         <button 
           onClick={handleAgentClick}
@@ -126,6 +140,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       );
     }
 
+    console.log(`🔒 Showing Subscribe button for ${app.name}`);
     return (
       <button 
         onClick={() => onAddToCart(app)}
@@ -140,6 +155,15 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
+  // Debug the lock condition
+  const shouldShowLock = !hasAccess && !app.isComingSoon && user;
+  console.log(`🔐 Lock condition for ${app.name}:`, {
+    shouldShowLock,
+    hasAccess,
+    isComingSoon: app.isComingSoon,
+    user: !!user
+  });
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* App Header with Image/Icon */}
@@ -147,7 +171,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
           {app.badge}
         </div>
-        {!hasAccess && !app.isComingSoon && user && (
+        {shouldShowLock && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
             <Lock className="w-12 h-12 text-white" />
           </div>

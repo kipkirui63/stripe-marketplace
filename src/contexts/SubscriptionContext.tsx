@@ -27,7 +27,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const checkSubscription = async () => {
+    console.log('🔄 Starting subscription check...');
+    console.log('User:', user ? 'logged in' : 'not logged in');
+    console.log('Token:', token ? 'exists' : 'missing');
+    
     if (!token || !user) {
+      console.log('❌ No token or user - setting access to false');
       setHasAccess(false);
       setSubscriptionExpiry(null);
       return;
@@ -35,47 +40,63 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     setIsLoading(true);
     try {
+      console.log('📡 Making API call to check subscription...');
       const response = await fetch(`${API_BASE_URL}/auth/check-subscription?token=${encodeURIComponent(token)}`);
+      
+      console.log('📋 Response status:', response.status);
+      
+      if (!response.ok) {
+        console.error('❌ Response not OK:', response.status, response.statusText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log('📦 Subscription check response:', data);
       
-      console.log('Subscription check response:', data);
+      const newHasAccess = data.has_access || false;
+      console.log('🔐 Setting hasAccess to:', newHasAccess);
       
-      setHasAccess(data.has_access || false);
+      setHasAccess(newHasAccess);
       
       // If user has access, we can store expiry info if provided by backend
-      if (data.has_access && data.subscription_end) {
+      if (newHasAccess && data.subscription_end) {
+        console.log('📅 Setting subscription expiry:', data.subscription_end);
         setSubscriptionExpiry(data.subscription_end);
       } else {
         setSubscriptionExpiry(null);
       }
       
       // If subscription expired, show alert and redirect away from agent pages
-      if (!data.has_access && window.location.pathname.includes('agent')) {
+      if (!newHasAccess && window.location.pathname.includes('agent')) {
         alert('Your subscription has expired. Please renew to continue accessing this app.');
         window.location.href = '/marketplace';
       }
       
     } catch (error) {
-      console.error('Subscription check failed:', error);
+      console.error('💥 Subscription check failed:', error);
       setHasAccess(false);
       setSubscriptionExpiry(null);
     } finally {
       setIsLoading(false);
+      console.log('✅ Subscription check completed');
     }
   };
 
   // Setup periodic checking
   useEffect(() => {
     if (token && user) {
+      console.log('🚀 User and token available, starting subscription monitoring');
       // Initial check
       checkSubscription();
       
       // Set up periodic checking every 5 minutes
       intervalRef.current = setInterval(() => {
+        console.log('⏰ Periodic subscription check triggered');
         checkSubscription();
       }, 5 * 60 * 1000); // 5 minutes
       
     } else {
+      console.log('🔒 No user or token, clearing access');
       setHasAccess(false);
       setSubscriptionExpiry(null);
       
@@ -98,6 +119,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && token && user) {
+        console.log('👁️ Page visibility changed, checking subscription');
         checkSubscription();
       }
     };
@@ -105,6 +127,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [token, user]);
+
+  console.log('🎯 Current subscription state - hasAccess:', hasAccess, 'isLoading:', isLoading);
 
   return (
     <SubscriptionContext.Provider value={{ hasAccess, isLoading, checkSubscription, subscriptionExpiry }}>
