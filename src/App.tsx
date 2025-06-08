@@ -20,9 +20,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Navigate to="/marketplace" replace />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<Marketplace />} />
+              <Route path="*" element={<Marketplace />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
