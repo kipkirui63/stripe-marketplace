@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Star, ShoppingCart, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,30 +32,51 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
   
   const hasAccessToApp = hasPurchased(app.name);
   
-  const renderStars = (rating: number, interactive: boolean = false) => {
-    const stars = [];
-    const currentRating = interactive ? userRating : rating;
+  const renderStars = (interactive: boolean = false) => {
+  const stars = [];
 
+  if (!interactive) {
+    // Always show 4.5 stars for display
     for (let i = 1; i <= 5; i++) {
-      const isFilled = i <= currentRating;
-      
+      if (i <= 4) {
+        stars.push(
+          <Star
+            key={i}
+            className="w-4 h-4 fill-yellow-400 text-yellow-400"
+          />
+        );
+      } else {
+        stars.push(
+          <Star
+            key={i}
+            className="w-4 h-4 text-yellow-400"
+            style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0% 100%)", fill: "#facc15" }}
+          />
+        );
+      }
+    }
+  } else {
+    // Allow interactive user rating
+    for (let i = 1; i <= 5; i++) {
+      const isFilled = i <= userRating;
+
       stars.push(
         <Star
           key={i}
           className={`w-4 h-4 transition-colors ${
-            isFilled 
-              ? 'fill-yellow-400 text-yellow-400' 
-              : interactive 
-                ? 'text-gray-300 hover:text-yellow-400 cursor-pointer' 
-                : 'text-gray-300'
+            isFilled
+              ? 'fill-yellow-400 text-yellow-400'
+              : 'text-gray-300 hover:text-yellow-400 cursor-pointer'
           }`}
-          onClick={interactive ? () => onRate(app.id, i) : undefined}
+          onClick={() => onRate(app.id, i)}
         />
       );
     }
+  }
 
-    return stars;
-  };
+  return stars;
+};
+
 
   const handleAgentClick = async () => {
     if (app.isComingSoon) {
@@ -69,19 +89,35 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
       return;
     }
     
-    await checkSubscription();
-    
-    if (!hasPurchased(app.name)) {
-      alert(`You need to purchase ${app.name} to access this agent.`);
-      return;
-    }
-    
-    if (app.agentUrl) {
-      window.open(app.agentUrl, '_blank');
+    try {
+      await checkSubscription();
+      
+      if (!hasPurchased(app.name)) {
+        alert(`You need to purchase ${app.name} to access this agent.`);
+        return;
+      }
+      
+      if (app.agentUrl) {
+        window.open(app.agentUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      alert('Error verifying your access. Please try again.');
     }
   };
 
   const getActionButton = () => {
+    if (isLoading) {
+      return (
+        <button 
+          disabled
+          className="w-full bg-gray-300 text-white py-3 px-4 rounded-lg cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+        >
+          <span>Loading...</span>
+        </button>
+      );
+    }
+
     if (app.isComingSoon) {
       return (
         <button 
@@ -128,17 +164,14 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
     );
   };
 
-  // Calculate dynamic review count - if user has rated, add 1 to base count
   const displayReviewCount = userRating > 0 ? app.reviewCount + 1 : app.reviewCount;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      {/* App Header with Image/Icon */}
       <div className={`relative h-64 ${app.backgroundGradient} flex items-center justify-center`}>
         <div className={`absolute top-4 right-4 ${app.badgeColor} text-white text-xs font-bold px-2 py-1 rounded z-10`}>
           {app.badge}
         </div>
-        {/* Show purchased indicator for owned apps */}
         {user && hasAccessToApp && !app.isComingSoon && (
           <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
             Owned
@@ -147,7 +180,6 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
       </div>
       
-      {/* App Content */}
       <div className="p-6">
         <div className="flex items-center justify-between mb-2">
           <h3 
@@ -169,15 +201,13 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         
         <p className="text-gray-600 text-sm mb-4 leading-relaxed">{app.description}</p>
         
-        {/* Rating - Interactive Stars */}
         <div className="flex items-center space-x-2 mb-4">
           <div className="flex">
-            {renderStars(userRating || 0, true)}
+            {renderStars(true)}
           </div>
           <span className="text-sm text-gray-600">({displayReviewCount})</span>
         </div>
         
-        {/* Action Button */}
         {getActionButton()}
       </div>
     </div>

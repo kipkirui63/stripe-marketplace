@@ -13,6 +13,7 @@ interface SubscriptionContextType {
   checkSubscription: () => Promise<void>;
   hasPurchased: (appName: string) => boolean;
   subscriptionExpiry: string | null;
+  refreshSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
@@ -42,11 +43,13 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
   const { token, user } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const hasPurchased = (appName: string) => {
+  const hasPurchased = (appName: string): boolean => {
     return purchasedApps.includes(appName);
   };
 
-  const fetchToolList = async () => {
+  const fetchToolList = async (): Promise<{ [key: number]: string }> => {
+    if (!token) return {};
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/tools/`, {
         method: "GET",
@@ -54,7 +57,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Failed to fetch tools");
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tools: ${response.status}`);
+      }
 
       const data = await response.json();
       const mapping: { [key: number]: string } = {};
@@ -62,13 +68,14 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         mapping[tool.id] = tool.name;
       });
       setToolMap(mapping);
+      return mapping;
     } catch (error) {
-      console.error("🛑 Error loading tools:", error);
+      console.error("Error loading tools:", error);
+      return {};
     }
   };
 
-  const checkSubscription = async () => {
-    console.log("🔄 Starting subscription check...");
+  const checkSubscription = async (): Promise<void> => {
     if (!token || !user) {
       setPurchasedApps([]);
       setSubscriptionExpiry(null);
@@ -77,6 +84,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setIsLoading(true);
     try {
+      const currentToolMap = Object.keys(toolMap).length > 0 
+        ? toolMap 
+        : await fetchToolList();
+
       const response = await fetch(
         `${API_BASE_URL}/api/auth/check-subscription/`,
         {
@@ -94,20 +105,24 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
       const data = await response.json();
       if (data.has_access && Array.isArray(data.tools)) {
         const mappedApps = data.tools
-          .map((toolId: number) => toolMap[toolId])
+          .map((toolId: number) => currentToolMap[toolId])
           .filter(Boolean);
 
         setPurchasedApps(mappedApps);
 
-        const futureDate = new Date();
-        futureDate.setMonth(futureDate.getMonth() + 1);
-        setSubscriptionExpiry(futureDate.toISOString());
+        if (data.expiry_date) {
+          setSubscriptionExpiry(data.expiry_date);
+        } else {
+          const futureDate = new Date();
+          futureDate.setMonth(futureDate.getMonth() + 1);
+          setSubscriptionExpiry(futureDate.toISOString());
+        }
       } else {
         setPurchasedApps([]);
         setSubscriptionExpiry(null);
       }
     } catch (error) {
-      console.error("💥 Subscription check failed:", error);
+      console.error("Subscription check failed:", error);
       setPurchasedApps([]);
       setSubscriptionExpiry(null);
     } finally {
@@ -115,42 +130,51 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const refreshSubscription = async (): Promise<void> => {
+    await fetchToolList();
+    await checkSubscription();
+  };
+
+  useEffect(() => {
+    const handlePaymentSuccess = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPaymentSuccess = urlParams.has('session_id') || 
+                             urlParams.get('status') === 'success' || 
+                             urlParams.get('success') === 'true';
+
+      if (isPaymentSuccess && token && user) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        await fetchToolList();
+        
+        let retries = 3;
+        while (retries > 0) {
+          await checkSubscription();
+          if (purchasedApps.length > 0) break;
+          
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+      }
+    };
+
+    handlePaymentSuccess();
+  }, [token, user, toolMap, purchasedApps]);
+
   useEffect(() => {
     if (token && user) {
-      fetchToolList();
-    }
-  }, [token, user]);
+      const initialize = async () => {
+        await fetchToolList();
+        await checkSubscription();
+      };
+      initialize();
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isPaymentSuccess =
-      urlParams.get("status") === "success" ||
-      urlParams.get("success") === "true" ||
-      urlParams.get("session_id");
-
-    if (isPaymentSuccess && token && user) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      checkSubscription().then(() => {
-        setTimeout(() => {
-          checkSubscription();
-        }, 3000);
-      });
-    }
-  }, [token, user, toolMap]);
-
-  useEffect(() => {
-    if (token && user) {
-      checkSubscription();
-      intervalRef.current = setInterval(() => {
-        checkSubscription();
-      }, 5 * 60 * 1000);
+      intervalRef.current = setInterval(checkSubscription, 5 * 60 * 1000);
     } else {
       setPurchasedApps([]);
       setSubscriptionExpiry(null);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
     }
 
     return () => {
@@ -158,18 +182,19 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [token, user, toolMap]);
+  }, [token, user]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && token && user) {
+      if (document.visibilityState === 'visible' && token && user) {
         checkSubscription();
       }
     };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [token, user]);
 
   return (
@@ -180,6 +205,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         checkSubscription,
         hasPurchased,
         subscriptionExpiry,
+        refreshSubscription,
       }}
     >
       {children}
