@@ -11,7 +11,13 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, phone: string, password: string) => Promise<void>;
+  register: (
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -33,9 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (token) {
-      const storedEmail = localStorage.getItem('email');
       const storedUser = localStorage.getItem('user');
-      if (storedEmail && storedUser) {
+      if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
     }
@@ -61,7 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(newToken);
       setUser(data.user);
       localStorage.setItem('token', newToken);
-      localStorage.setItem('email', data.user.email);
       localStorage.setItem('user', JSON.stringify(data.user));
     } catch (error) {
       console.error('Login error:', error);
@@ -71,7 +75,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (firstName: string, lastName: string, email: string, phone: string, password: string) => {
+  const register = async (
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone: string,
+    password: string
+  ) => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/register/`, {
@@ -105,7 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
-    localStorage.removeItem('email');
     localStorage.removeItem('user');
   };
 
@@ -120,16 +129,32 @@ interface CheckoutResponse {
   checkout_url: string;
 }
 
+export const fetchToolIdByName = async (token: string, appName: string): Promise<string> => {
+  const response = await fetch(`${API_BASE_URL}/api/tools/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) throw new Error('Failed to fetch tools');
+
+  const data = await response.json();
+  const tool = data.tools.find((tool: { name: string }) => tool.name === appName);
+
+  if (!tool) throw new Error('Tool not found');
+  return tool.id.toString();
+};
+
 export const createCheckoutSession = async (token: string, appName: string): Promise<string> => {
-  const toolId = getToolId(appName);
+  const toolId = await fetchToolIdByName(token, appName);
 
   const response = await fetch(
-    `http://localhost:8000/api/stripe/create-checkout?tool_id=${encodeURIComponent(toolId)}`,
+    `${API_BASE_URL}/api/stripe/create-checkout?tool_id=${encodeURIComponent(toolId)}`,
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 
@@ -140,26 +165,4 @@ export const createCheckoutSession = async (token: string, appName: string): Pro
 
   const data: CheckoutResponse = await response.json();
   return data.checkout_url;
-};
-
-export const getProductKey = (appName: string): string => {
-  const productMapping: { [key: string]: string } = {
-    'Business Intelligence Agent': 'bi_agent',
-    'AI Recruitment Assistant': 'recruitment_assistant',
-    'CrispWrite': 'crispwrite',
-    'SOP Assistant': 'sop_agent',
-    'Resume Analyzer': 'resume_analyzer',
-  };
-  return productMapping[appName] || appName.toLowerCase().replace(/\s+/g, '_');
-};
-
-export const getToolId = (appName: string): string => {
-  const toolIdMapping: { [key: string]: string } = {
-    'Business Intelligence Agent': '1',
-    'AI Recruitment Assistant': '2',
-    'CrispWrite': '3',
-    'SOP Assistant': '4',
-    'Resume Analyzer': '5',
-  };
-  return toolIdMapping[appName] || '1';
 };

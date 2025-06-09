@@ -38,11 +38,33 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(
     null
   );
+  const [toolMap, setToolMap] = useState<{ [key: number]: string }>({});
   const { token, user } = useAuth();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const hasPurchased = (appName: string) => {
     return purchasedApps.includes(appName);
+  };
+
+  const fetchToolList = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tools/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch tools");
+
+      const data = await response.json();
+      const mapping: { [key: number]: string } = {};
+      data.tools.forEach((tool: { id: number; name: string }) => {
+        mapping[tool.id] = tool.name;
+      });
+      setToolMap(mapping);
+    } catch (error) {
+      console.error("🛑 Error loading tools:", error);
+    }
   };
 
   const checkSubscription = async () => {
@@ -55,12 +77,15 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/check-subscription/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/auth/check-subscription/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -68,16 +93,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const data = await response.json();
       if (data.has_access && Array.isArray(data.tools)) {
-        const allApps = [
-          "Business Intelligence Agent", // tool_id = 1
-          "AI Recruitment Assistant",    // tool_id = 2
-          "CrispWrite",                 // tool_id = 3
-          "SOP Assistant",              // tool_id = 4
-          "Resume Analyzer",            // tool_id = 5
-        ];
-
         const mappedApps = data.tools
-          .map((toolId: number) => allApps[toolId - 1])
+          .map((toolId: number) => toolMap[toolId])
           .filter(Boolean);
 
         setPurchasedApps(mappedApps);
@@ -99,6 +116,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
+    if (token && user) {
+      fetchToolList();
+    }
+  }, [token, user]);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess =
       urlParams.get("status") === "success" ||
@@ -113,7 +136,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         }, 3000);
       });
     }
-  }, [token, user]);
+  }, [token, user, toolMap]);
 
   useEffect(() => {
     if (token && user) {
@@ -135,7 +158,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [token, user]);
+  }, [token, user, toolMap]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
