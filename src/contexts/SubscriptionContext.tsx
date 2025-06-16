@@ -16,31 +16,23 @@ interface SubscriptionContextType {
   refreshSubscription: () => Promise<void>;
 }
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
-  undefined
-);
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
-  if (!context)
-    throw new Error(
-      "useSubscription must be used within a SubscriptionProvider"
-    );
+  if (!context) throw new Error("useSubscription must be used within a SubscriptionProvider");
   return context;
 };
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://www.crispai.ca/api";
 
-export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [purchasedApps, setPurchasedApps] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(
-    null
-  );
+  const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
   const [toolMap, setToolMap] = useState<{ [key: number]: string }>({});
-  const { token, user } = useAuth();
+  const { user } = useAuth();
+  const token = localStorage.getItem('access_token');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const hasPurchased = (appName: string): boolean => {
@@ -49,22 +41,17 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchToolList = async (): Promise<{ [key: number]: string }> => {
     if (!token) return {};
-    
     try {
-      const response = await fetch(`${API_BASE_URL}/api/tools/`, {
+      const response = await fetch(`${API_BASE_URL}/tools/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tools: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Failed to fetch tools: ${response.status}`);
       const data = await response.json();
       const mapping: { [key: number]: string } = {};
-      data.tools.forEach((tool: { id: number; name: string }) => {
+      data.forEach((tool: { id: number; name: string }) => {
         mapping[tool.id] = tool.name;
       });
       setToolMap(mapping);
@@ -84,39 +71,27 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setIsLoading(true);
     try {
-      const currentToolMap = Object.keys(toolMap).length > 0 
-        ? toolMap 
-        : await fetchToolList();
+      const currentToolMap = Object.keys(toolMap).length > 0 ? toolMap : await fetchToolList();
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/check-subscription/`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/auth/check-subscription/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
       const data = await response.json();
+
+      // Align with Django: expects { has_access: true, tools: [tool_ids] }
       if (data.has_access && Array.isArray(data.tools)) {
         const mappedApps = data.tools
           .map((toolId: number) => currentToolMap[toolId])
           .filter(Boolean);
 
         setPurchasedApps(mappedApps);
-
-        if (data.expiry_date) {
-          setSubscriptionExpiry(data.expiry_date);
-        } else {
-          const futureDate = new Date();
-          futureDate.setMonth(futureDate.getMonth() + 1);
-          setSubscriptionExpiry(futureDate.toISOString());
-        }
+        setSubscriptionExpiry(data.expiry_date || null);
       } else {
         setPurchasedApps([]);
         setSubscriptionExpiry(null);
@@ -138,30 +113,27 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const handlePaymentSuccess = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const isPaymentSuccess = urlParams.has('session_id') || 
-                             urlParams.get('status') === 'success' || 
-                             urlParams.get('success') === 'true';
+      const isPaymentSuccess =
+        urlParams.has("session_id") ||
+        urlParams.get("status") === "success" ||
+        urlParams.get("success") === "true";
 
       if (isPaymentSuccess && token && user) {
         window.history.replaceState({}, document.title, window.location.pathname);
-        
         await fetchToolList();
-        
+
         let retries = 3;
         while (retries > 0) {
           await checkSubscription();
           if (purchasedApps.length > 0) break;
-          
           retries--;
-          if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
+          if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
     };
 
     handlePaymentSuccess();
-  }, [token, user, toolMap, purchasedApps]);
+  }, [token, user, toolMap]);
 
   useEffect(() => {
     if (token && user) {
@@ -170,30 +142,26 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
         await checkSubscription();
       };
       initialize();
-
-      intervalRef.current = setInterval(checkSubscription, 5 * 60 * 1000);
+      intervalRef.current = setInterval(checkSubscription, 5 * 60 * 1000); // Refresh every 5 min
     } else {
       setPurchasedApps([]);
       setSubscriptionExpiry(null);
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [token, user]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && token && user) {
+      if (document.visibilityState === "visible" && token && user) {
         checkSubscription();
       }
     };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [token, user]);
 

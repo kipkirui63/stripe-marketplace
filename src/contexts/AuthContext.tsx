@@ -1,74 +1,105 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
+  id?: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
   role?: string;
+  is_verified?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (
     firstName: string,
     lastName: string,
     email: string,
     phone: string,
-    password: string
-  ) => Promise<void>;
+    password: string,
+    repeatPassword: string
+  ) => Promise<string>;
   logout: () => void;
   isLoading: boolean;
+  error: string | null;
+  verifyEmail: (uid: string, token: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://www.crispai.ca/api'; // Use your actual domain in prod
+
+const endpoints = {
+  register: `${API_BASE_URL}/register/`,
+  login: `${API_BASE_URL}/login/`,
+  activate: (uid: string, token: string) => `${API_BASE_URL}/activate/${uid}/${token}/`,
+  tools: `${API_BASE_URL}/tools/`,
+  createCheckout: `${API_BASE_URL}/stripe/create-checkout/`,
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (token) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
         setUser(JSON.parse(storedUser));
+      } catch {
+        logout();
       }
     }
-  }, [token]);
+  }, []);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login/`, {
+      const response = await fetch(endpoints.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Login failed' }));
-        throw new Error(error.detail || 'Login failed');
-      }
-
       const data = await response.json();
-      const newToken = data.access;
+      if (!response.ok) throw new Error(data.detail || 'Login failed');
 
-      setToken(newToken);
-      setUser(data.user);
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      
+
+      const userData = data.user;
+      const authenticatedUser: User = {
+        id: userData.id,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone: userData.phone,
+        role: userData.role,
+        is_verified: true,
+      };
+
+      setUser(authenticatedUser);
+      localStorage.setItem('user', JSON.stringify(authenticatedUser));
     } catch (error) {
       console.error('Login error:', error);
+      setError(error instanceof Error ? error.message : 'Login failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -80,11 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     lastName: string,
     email: string,
     phone: string,
-    password: string
-  ) => {
+    password: string,
+    repeatPassword: string
+  ): Promise<string> => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/register/`, {
+      const response = await fetch(endpoints.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,74 +126,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email,
           phone,
           password,
-          repeat_password: password,
+          repeat_password: repeatPassword,
         }),
       });
 
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      const data = isJson ? await response.json() : { detail: 'Unexpected server error. Check endpoint URL.' };
+
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Registration failed' }));
-        throw new Error(error.detail || 'Registration failed');
+        const errMsg = data.detail || data.error || 'Registration failed';
+        throw new Error(errMsg);
       }
 
-      alert('Registration successful. Please check your email to activate your account.');
+      return data.detail || 'Verification email sent. Please check your inbox.';
     } catch (error) {
       console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : 'Registration failed');
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const verifyEmail = async (uid: string, token: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(endpoints.activate(uid, token));
+      if (!response.ok) throw new Error('Verification failed');
+
+      if (user) {
+        const verifiedUser = { ...user, is_verified: true };
+        setUser(verifiedUser);
+        localStorage.setItem('user', JSON.stringify(verifiedUser));
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Verification error:', error);
+      setError(error instanceof Error ? error.message : 'Verification failed');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        isLoading,
+        error,
+        verifyEmail,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
+// === STRIPE CHECKOUT UTILITIES ===
+
 interface CheckoutResponse {
   checkout_url: string;
 }
 
-export const fetchToolIdByName = async (token: string, appName: string): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/api/tools/`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) throw new Error('Failed to fetch tools');
+export const fetchToolIdByName = async (toolName: string): Promise<string> => {
+  const response = await fetch(endpoints.tools);
+  if (!response.ok) throw new Error('Unable to fetch tools');
 
   const data = await response.json();
-  const tool = data.tools.find((tool: { name: string }) => tool.name === appName);
-
+  const tool = data.find((t: { name: string }) => t.name === toolName);
   if (!tool) throw new Error('Tool not found');
   return tool.id.toString();
 };
 
-export const createCheckoutSession = async (token: string, appName: string): Promise<string> => {
-  const toolId = await fetchToolIdByName(token, appName);
+export const createCheckoutSession = async (toolName: string): Promise<string> => {
+  const toolId = await fetchToolIdByName(toolName);
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/stripe/create-checkout?tool_id=${encodeURIComponent(toolId)}`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await fetch(endpoints.createCheckout, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool_id: toolId }),
+  });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Failed to create checkout session');
+    throw new Error(error.detail || 'Checkout failed');
   }
 
   const data: CheckoutResponse = await response.json();

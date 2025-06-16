@@ -71,7 +71,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
     try {
       if (isRegister) {
         console.log('Attempting registration...');
-        await register(firstName, lastName, email, phone, password);
+        await register(firstName, lastName, email, phone, password, confirmPassword);
         toast({
           title: "Registration Successful",
           description: "Account created successfully! Please sign in to continue.",

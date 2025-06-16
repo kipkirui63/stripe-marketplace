@@ -5,6 +5,8 @@ import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
+import { toast } from 'react-toastify';
+
 
 interface App {
   id: number;
@@ -39,13 +41,13 @@ const MarketplaceContent = () => {
       description: 'Advanced AI-powered analytics platform that transforms your data into actionable insights with real-time dashboards and predictive modeling.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 0,
-      reviewCount: 0,
+      rating: 4.6,
+      reviewCount: 176,
       badge: 'Popular',
       badgeColor: 'bg-blue-500',
       icon: '/lovable-uploads/db8496d5-abfd-475d-acfa-4ec1a30bb1e6.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
-      agentUrl: 'https://crispai.crispvision.org/business_agent'
+      agentUrl: 'https://www.crispai.ca/marketplace/Business_agent'
     },
     {
       id: 2,
@@ -53,8 +55,8 @@ const MarketplaceContent = () => {
       description: 'Streamline your hiring process with AI-powered candidate screening, interview scheduling, and talent matching algorithms.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 0,
-      reviewCount: 0,
+      rating: 4,
+      reviewCount: 146,
       badge: 'New',
       badgeColor: 'bg-green-500',
       icon: '/lovable-uploads/4d97bc8a-c3f5-40eb-807d-b6745199d8dd.png',
@@ -67,13 +69,14 @@ const MarketplaceContent = () => {
       description: 'Professional writing assistant that helps create compelling content, from emails to reports, with AI-powered grammar and style suggestions.',
       price: '$89.99',
       freeTrialDays: '7-day free trial',
-      rating: 0,
-      reviewCount: 0,
+      rating: 5,
+      reviewCount: 170,
       badge: 'Coming Soon',
       badgeColor: 'bg-gray-500',
       icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
       backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
-      isComingSoon: true
+      agentUrl:"https://www.crispai.ca/marketplace/CrispWrite"
+      // isComingSoon: true
     },
     {
       id: 4,
@@ -81,8 +84,8 @@ const MarketplaceContent = () => {
       description: 'Create, manage, and optimize Standard Operating Procedures with intelligent templates and collaborative editing features.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 0,
-      reviewCount: 0,
+      rating: 4.5,
+      reviewCount: 145,
       badge: 'Trending',
       badgeColor: 'bg-purple-500',
       icon: '/lovable-uploads/e3d9814f-4b52-429f-8456-40b09db8f73a.png',
@@ -95,8 +98,8 @@ const MarketplaceContent = () => {
       description: 'Advanced resume screening tool that evaluates candidates against job requirements with detailed scoring and recommendations.',
       price: '$19.99',
       freeTrialDays: '7-day free trial',
-      rating: 0,
-      reviewCount: 0,
+      rating: 120,
+      reviewCount: 180,
       badge: 'Essential',
       badgeColor: 'bg-indigo-500',
       icon: '/lovable-uploads/ee996b90-5709-4ed0-a535-014aa0accf98.png',
@@ -117,13 +120,18 @@ const MarketplaceContent = () => {
         return categoryMap[activeTab]?.includes(app.name);
       });
 
-  const addToCart = (item: App) => {
-    setCartItems(prev => {
-      const exists = prev.find(cartItem => cartItem.id === item.id);
-      if (exists) return prev;
-      return [...prev, item];
-    });
-  };
+ const addToCart = (item: App) => {
+  setCartItems(prev => {
+    const exists = prev.find(cartItem => cartItem.id === item.id);
+    if (exists) {
+      toast.info(`${item.name} is already in the cart.`);
+      return prev;
+    }
+    toast.success(`${item.name} added to cart successfully!`);
+    return [...prev, item];
+  });
+};
+
 
   const removeFromCart = (id: number) => {
     setCartItems(prev => prev.filter(item => item.id !== id));

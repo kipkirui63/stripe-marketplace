@@ -24,7 +24,8 @@ interface CartSidebarProps {
 
 const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { user, token } = useAuth();
+   const { user } = useAuth();
+    const token = localStorage.getItem('access_token');
   const { hasPurchased, checkSubscription } = useSubscription();
   const { toast } = useToast();
 
