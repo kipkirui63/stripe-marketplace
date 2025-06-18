@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://www.crispai.ca/api';
+const API_BASE_URL = 'https://api.crispai.ca';
 
 interface CheckoutResponse {
   checkout_url: string;
@@ -14,7 +14,7 @@ export const createCheckoutSession = async (
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify({ tool_id: toolId }) // correct field name
+    body: JSON.stringify({ tool_id: toolId })
   });
 
   if (!response.ok) {
