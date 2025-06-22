@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.crispai.ca';
+const API_BASE_URL = 'https://api.crispai.ca/api';
 
 interface CheckoutResponse {
   checkout_url: string;

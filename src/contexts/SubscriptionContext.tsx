@@ -24,7 +24,7 @@ export const useSubscription = () => {
   return context;
 };
 
-const API_BASE_URL = "https://api.crispai.ca";
+const API_BASE_URL = "https://api.crispai.ca/api";
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [purchasedApps, setPurchasedApps] = useState<string[]>([]);

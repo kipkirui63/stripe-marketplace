@@ -47,7 +47,7 @@ const MarketplaceContent = () => {
       badgeColor: 'bg-blue-500',
       icon: '/lovable-uploads/db8496d5-abfd-475d-acfa-4ec1a30bb1e6.png',
       backgroundGradient: 'bg-gradient-to-br from-blue-400 to-purple-600',
-      agentUrl: 'https://www.crispai.ca/marketplace/Business_agent'
+      agentUrl: 'https://businessagent.crispai.ca/'
     },
     {
       id: 2,
@@ -71,12 +71,12 @@ const MarketplaceContent = () => {
       freeTrialDays: '7-day free trial',
       rating: 5,
       reviewCount: 170,
-      badge: 'Coming Soon',
+      badge: 'Trending',
       badgeColor: 'bg-gray-500',
       icon: '/lovable-uploads/d66f2274-4cd1-4479-83ff-ae819baf5942.png',
       backgroundGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
-      agentUrl:"https://www.crispai.ca/marketplace/CrispWrite"
-      // isComingSoon: true
+      agentUrl:"https://crispwrite.crispai.ca/"
+      
     },
     {
       id: 4,

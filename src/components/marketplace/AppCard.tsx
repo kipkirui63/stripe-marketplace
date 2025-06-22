@@ -159,7 +159,9 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center space-x-2"
       >
         <ShoppingCart className="w-4 h-4" />
-        <span>Purchase App</span>
+        <span>Purchase
+
+</span>
       </button>
     );
   };

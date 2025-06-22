@@ -248,7 +248,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
                     ? 'Processing...' 
                     : availableForPurchase.length === 0
                     ? 'No Items to Purchase'
-                    : `Purchase ${availableForPurchase.length} App${availableForPurchase.length > 1 ? 's' : ''}`
+                    : `Purchase`
                   }
                 </button>
                 
