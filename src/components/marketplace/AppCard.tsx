@@ -205,7 +205,7 @@ const AppCard = ({ app, userRating, onAddToCart, onRate }: AppCardProps) => {
         
         <div className="flex items-center space-x-2 mb-4">
           <div className="flex">
-            {renderStars(true)}
+            {renderStars(false)}
           </div>
           <span className="text-sm text-gray-600">({displayReviewCount})</span>
         </div>
