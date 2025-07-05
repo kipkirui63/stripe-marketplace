@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ShoppingCart, LogOut, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
 import LoginModal from './auth/LoginModal';
 
