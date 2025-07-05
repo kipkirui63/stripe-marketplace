@@ -78,7 +78,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Login failed');
+      
+      if (!response.ok) {
+        // Check if this is an unverified account error
+        if (data.detail && (
+          data.detail.includes('account is not verified') ||
+          data.detail.includes('not verified') ||
+          data.detail.includes('verify your email') ||
+          data.detail.includes('account not activated') ||
+          data.detail.includes('activation required')
+        )) {
+          throw new Error('Please activate your email before logging in. Check your inbox for the activation link.');
+        }
+        throw new Error(data.detail || 'Login failed');
+      }
 
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
@@ -92,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         last_name: userData.last_name,
         phone: userData.phone,
         role: userData.role,
-        is_verified: true,
+        is_verified: userData.is_verified || true,
       };
 
       setUser(authenticatedUser);
