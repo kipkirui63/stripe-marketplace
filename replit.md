@@ -122,6 +122,15 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 ## Changelog
 
 - July 05, 2025. Initial setup
+- July 15, 2025. Migrated from Replit Agent to standard Replit environment
+- July 15, 2025. Enhanced authentication flow with session timeout handling and login redirects
+
+## Recent Changes
+
+- Enhanced authentication system to redirect users to login when attempting to purchase while not logged in
+- Added session timeout detection and automatic logout for expired sessions
+- Improved checkout process to handle authentication errors gracefully
+- Added session validity checks before proceeding with purchases
 
 ## User Preferences
 

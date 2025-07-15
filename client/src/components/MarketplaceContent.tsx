@@ -6,6 +6,7 @@ import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
 import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
 
 
 interface App {
@@ -25,6 +26,7 @@ interface App {
 }
 
 const MarketplaceContent = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('All');
   const [cartItems, setCartItems] = useState<App[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -121,6 +123,13 @@ const MarketplaceContent = () => {
       });
 
  const addToCart = (item: App) => {
+  // Check if user is logged in before adding to cart
+  if (!user) {
+    toast.error('Please sign in to add items to your cart');
+    setIsLoginModalOpen(true);
+    return;
+  }
+
   setCartItems(prev => {
     const exists = prev.find(cartItem => cartItem.id === item.id);
     if (exists) {

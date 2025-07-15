@@ -25,6 +25,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   verifyEmail: (uid: string, token: string) => Promise<boolean>;
+  checkSessionValid: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -191,6 +192,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('refresh_token');
   };
 
+  const checkSessionValid = async (): Promise<boolean> => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+
+    try {
+      // Try to make a request to verify the token is still valid
+      const response = await fetch(`${API_BASE_URL}/auth/verify/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        // Token is invalid, logout user
+        logout();
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      // Network error or other issue, logout user to be safe
+      logout();
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -201,6 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         error,
         verifyEmail,
+        checkSessionValid,
       }}
     >
       {children}

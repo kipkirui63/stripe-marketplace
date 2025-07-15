@@ -24,8 +24,8 @@ interface CartSidebarProps {
 
 const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: CartSidebarProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-   const { user } = useAuth();
-    const token = localStorage.getItem('access_token');
+  const { user, logout, checkSessionValid } = useAuth();
+  const token = localStorage.getItem('access_token');
   const { hasPurchased, checkSubscription } = useSubscription();
   const { toast } = useToast();
 
@@ -36,6 +36,17 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
       toast({
         title: "Authentication Required",
         description: "Please sign in to proceed with checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if session is still valid before proceeding
+    const isSessionValid = await checkSessionValid();
+    if (!isSessionValid) {
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please sign in again.",
         variant: "destructive",
       });
       return;
@@ -113,7 +124,15 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
       let errorMessage = 'An unexpected error occurred during checkout.';
       
       if (error instanceof Error) {
-        if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+        if (error.message === 'SESSION_EXPIRED') {
+          logout();
+          toast({
+            title: "Session Expired",
+            description: "Your session has expired. Please sign in again to continue.",
+            variant: "destructive",
+          });
+          return;
+        } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
           errorMessage = 'Payment service is currently unavailable. Please try again later.';
         } else if (error.message.includes('Failed to fetch')) {
           errorMessage = 'Network error. Please check your connection and try again.';

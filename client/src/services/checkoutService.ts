@@ -19,6 +19,12 @@ export const createCheckoutSession = async (
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
+    
+    // Check if this is an authentication error (session expired)
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('SESSION_EXPIRED');
+    }
+    
     throw new Error(error.detail || 'Failed to create checkout session');
   }
 
