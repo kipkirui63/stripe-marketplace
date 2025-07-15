@@ -16,12 +16,19 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 - **Routing**: React Router for client-side navigation
 
 ### Backend Architecture
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (@neondatabase/serverless)
-- **Session Management**: In-memory storage with extensible interface
-- **Development**: Hot module replacement with Vite integration
+- **Primary Backend**: Node.js with Express.js
+  - **Language**: TypeScript with ES modules
+  - **Database**: PostgreSQL with Drizzle ORM
+  - **Database Provider**: Neon Database (@neondatabase/serverless)
+  - **Session Management**: In-memory storage with extensible interface
+  - **Development**: Hot module replacement with Vite integration
+
+- **Django Backend**: Python/Django REST API (crisp_backend/)
+  - **Framework**: Django 5.2.4 with Django REST Framework
+  - **Authentication**: Token-based authentication with JWT
+  - **Database**: PostgreSQL with Django ORM
+  - **Payment Processing**: Stripe integration
+  - **API Endpoints**: User auth, tool management, subscription handling
 
 ### Build System
 - **Frontend Build**: Vite with React plugin
@@ -139,6 +146,14 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
   - 6 months: 15% discount
   - 12 months: 20-25% discount
 - Added subscription plans component with pricing toggle similar to the provided screenshot
+- **Built complete Django backend (crisp_backend/):**
+  - User authentication with token-based system
+  - Tool management with sample data
+  - Subscription and payment models
+  - Stripe integration for checkout sessions
+  - RESTful API endpoints for all functionality
+  - Database migrations and admin interface
+  - Sample data population command
 
 ## User Preferences
 
