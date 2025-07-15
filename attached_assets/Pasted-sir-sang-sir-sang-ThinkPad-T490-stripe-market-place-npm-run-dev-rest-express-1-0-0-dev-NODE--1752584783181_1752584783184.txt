@@ -1,0 +1,51 @@
+sir-sang@sir-sang-ThinkPad-T490:~/stripe-market-place$ npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+
+node:internal/modules/run_main:104
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/sir-sang/stripe-market-place/server/index.ts' imported from /home/sir-sang/stripe-market-place/
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:860:10)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at nextResolve (node:internal/modules/esm/hooks:748:28)
+    at resolveBase (file:///home/sir-sang/.nvm/versions/node/v23.11.0/lib/node_modules/tsx/dist/esm/index.mjs?1752584426674:2:3811)
+    at resolveDirectory (file:///home/sir-sang/.nvm/versions/node/v23.11.0/lib/node_modules/tsx/dist/esm/index.mjs?1752584426674:2:4310)
+    at resolveTsPaths (file:///home/sir-sang/.nvm/versions/node/v23.11.0/lib/node_modules/tsx/dist/esm/index.mjs?1752584426674:2:5051)
+    at resolve (file:///home/sir-sang/.nvm/versions/node/v23.11.0/lib/node_modules/tsx/dist/esm/index.mjs?1752584426674:2:5428)
+    at nextResolve (node:internal/modules/esm/hooks:748:28)
+    at Hooks.resolve (node:internal/modules/esm/hooks:240:30) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///home/sir-sang/stripe-market-place/server/index.ts'
+}
+
+Node.js v23.11.0
+sir-sang@sir-sang-ThinkPad-T490:~/stripe-market-place$ npm start
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+node:internal/modules/cjs/loader:1408
+  throw err;
+  ^
+
+Error: Cannot find module '/home/sir-sang/stripe-market-place/dist/index.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1061:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1066:22)
+    at Function._load (node:internal/modules/cjs/loader:1215:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:151:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v23.11.0
+sir-sang@sir-sang-ThinkPad-T490:~/stripe-market-place$ ./start_frontend.sh
+Starting React frontend server...
+./start_frontend.sh: line 4: vite: command not found
