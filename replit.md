@@ -131,6 +131,14 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 - Added session timeout detection and automatic logout for expired sessions
 - Improved checkout process to handle authentication errors gracefully
 - Added session validity checks before proceeding with purchases
+- Added terms and conditions checkbox requirement for user registration
+- Updated login error message to "Please verify your email first" for unverified accounts
+- Implemented subscription plans with monthly/yearly billing toggle and discount structure:
+  - 1 month: 0% discount
+  - 3 months: 10% discount  
+  - 6 months: 15% discount
+  - 12 months: 20-25% discount
+- Added subscription plans component with pricing toggle similar to the provided screenshot
 
 ## User Preferences
 

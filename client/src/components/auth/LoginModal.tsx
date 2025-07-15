@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { login, register, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -44,6 +46,15 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
         toast({
           title: "Validation Error",
           description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!agreedToTerms) {
+        toast({
+          title: "Validation Error",
+          description: "Please agree to the terms and conditions.",
           variant: "destructive",
         });
         return;
@@ -259,6 +270,29 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
             </div>
           )}
 
+          {isRegister && (
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="terms"
+                checked={agreedToTerms}
+                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                className="mt-1"
+                disabled={isLoading}
+              />
+              <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
+                I agree to the{' '}
+                <a href="/terms" className="text-blue-600 hover:text-blue-700 underline" target="_blank">
+                  Terms and Conditions
+                </a>
+                {' '}and{' '}
+                <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline" target="_blank">
+                  Privacy Policy
+                </a>
+                <span className="text-red-500 ml-1">*</span>
+              </Label>
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={isLoading}
@@ -277,7 +311,17 @@ const LoginModal = ({ isOpen, onClose, onSuccess }: LoginModalProps) => {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => setIsRegister(!isRegister)}
+            onClick={() => {
+              setIsRegister(!isRegister);
+              // Reset form when switching
+              setEmail('');
+              setPassword('');
+              setConfirmPassword('');
+              setFirstName('');
+              setLastName('');
+              setPhone('');
+              setAgreedToTerms(false);
+            }}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
             disabled={isLoading}
           >

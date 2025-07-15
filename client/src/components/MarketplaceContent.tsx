@@ -5,6 +5,7 @@ import AppsGrid from './marketplace/AppsGrid';
 import CartSidebar from './CartSidebar';
 import LoginModal from './auth/LoginModal';
 import SubscriptionWarning from './SubscriptionWarning';
+import SubscriptionPlans from './SubscriptionPlans';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -159,6 +160,18 @@ const MarketplaceContent = () => {
     }));
   };
 
+  const handleSelectPlan = (planId: string, isYearly: boolean) => {
+    if (!user) {
+      toast.error('Please sign in to select a subscription plan');
+      setIsLoginModalOpen(true);
+      return;
+    }
+    
+    console.log('Selected plan:', planId, 'Yearly:', isYearly);
+    toast.success(`Selected ${planId} plan with ${isYearly ? 'yearly' : 'monthly'} billing`);
+    // Here you would typically redirect to checkout or handle subscription
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gray-50 pt-16" data-marketplace-content>
@@ -180,6 +193,11 @@ const MarketplaceContent = () => {
             onAddToCart={addToCart}
             onRate={handleRate}
           />
+          
+          {/* Subscription Plans Section */}
+          <div className="mt-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            <SubscriptionPlans onSelectPlan={handleSelectPlan} />
+          </div>
         </div>
       </div>
 

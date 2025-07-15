@@ -128,9 +128,13 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: 
           logout();
           toast({
             title: "Session Expired",
-            description: "Your session has expired. Please sign in again to continue.",
+            description: "Your session has expired. Redirecting to login...",
             variant: "destructive",
           });
+          // Redirect to login or show login modal
+          setTimeout(() => {
+            window.location.reload(); // This will trigger the login modal to open
+          }, 1000);
           return;
         } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
           errorMessage = 'Payment service is currently unavailable. Please try again later.';

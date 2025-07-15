@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data.detail.includes('account not activated') ||
           data.detail.includes('activation required')
         )) {
-          throw new Error('Please activate your email before logging in. Check your inbox for the activation link.');
+          throw new Error('Please verify your email first. Check your inbox for the verification link.');
         }
         throw new Error(data.detail || 'Login failed');
       }
