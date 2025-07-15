@@ -7,6 +7,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, blank=True)
     is_verified = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, default='user')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -18,6 +19,7 @@ class Tool(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    price_id = models.CharField(max_length=255, blank=True)  # Stripe price ID
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -39,15 +41,17 @@ class Subscription(models.Model):
         ('inactive', 'Inactive'),
         ('expired', 'Expired'),
         ('cancelled', 'Cancelled'),
+        ('canceled', 'Canceled'),  # Alternative spelling
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tool = models.ForeignKey(Tool, on_delete=models.CASCADE)
-    plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     stripe_subscription_id = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(blank=True)  # For backup email reference
     start_date = models.DateTimeField(default=timezone.now)
-    end_date = models.DateTimeField()
+    end_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,7 +59,7 @@ class Subscription(models.Model):
         return f"{self.user.username} - {self.tool.name} - {self.plan}"
 
     def is_active(self):
-        return self.status == 'active' and self.end_date > timezone.now()
+        return self.status == 'active' and (self.end_date is None or self.end_date > timezone.now())
 
 
 class Payment(models.Model):

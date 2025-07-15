@@ -4,11 +4,14 @@ This is the Django backend for the CrispAI Marketplace application.
 
 ## Features
 
-- User authentication with JWT tokens
-- Tool/subscription management
-- Stripe payment integration
-- RESTful API endpoints
-- PostgreSQL database support
+- **User Authentication**: JWT-based authentication with email verification
+- **Email System**: HTML email templates for account activation
+- **Tool Management**: Comprehensive tool catalog with pricing
+- **Subscription System**: Multi-plan subscriptions with Stripe integration
+- **Payment Processing**: Secure payment handling with webhooks
+- **User Profiles**: Extended user profiles with roles and verification status
+- **RESTful API**: Complete REST API endpoints for all functionality
+- **PostgreSQL Database**: Robust database with proper relationships
 
 ## Setup
 
@@ -74,4 +77,9 @@ python manage.py runserver 0.0.0.0:8000
 - `STRIPE_SECRET_KEY`: Stripe secret key for payments
 - `STRIPE_PUBLISHABLE_KEY`: Stripe publishable key
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook endpoint secret
+- `EMAIL_HOST`: SMTP email host (default: smtp.gmail.com)
+- `EMAIL_PORT`: SMTP email port (default: 587)
+- `EMAIL_HOST_USER`: SMTP email username
+- `EMAIL_HOST_PASSWORD`: SMTP email password
+- `DEFAULT_FROM_EMAIL`: Default from email address
 - `DEBUG`: Enable/disable debug mode (default: True)

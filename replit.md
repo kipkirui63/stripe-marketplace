@@ -147,13 +147,16 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
   - 12 months: 20-25% discount
 - Added subscription plans component with pricing toggle similar to the provided screenshot
 - **Built complete Django backend (crisp_backend/):**
-  - User authentication with token-based system
-  - Tool management with sample data
-  - Subscription and payment models
-  - Stripe integration for checkout sessions
-  - RESTful API endpoints for all functionality
+  - JWT-based user authentication with email verification
+  - HTML email templates for account activation
+  - Enhanced user profiles with roles and verification status
+  - Tool management with comprehensive catalog
+  - Multi-plan subscription system with Stripe integration
+  - Payment processing with webhook handling
+  - RESTful API endpoints matching frontend requirements
   - Database migrations and admin interface
-  - Sample data population command
+  - Sample data population and testing scripts
+  - Email functionality extracted from provided views.py
 
 ## User Preferences
 
