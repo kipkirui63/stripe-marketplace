@@ -35,14 +35,14 @@ export const useAuth = () => {
   return context;
 };
 
-const API_BASE_URL = 'https://api.crispai.ca/api'; 
+const API_BASE_URL = 'http://localhost:8000/api'; 
 
 const endpoints = {
-  register: `${API_BASE_URL}/register/`,
-  login: `${API_BASE_URL}/login/`,
-  activate: (uid: string, token: string) => `${API_BASE_URL}/activate/${uid}/${token}/`,
+  register: `${API_BASE_URL}/auth/register/`,
+  login: `${API_BASE_URL}/auth/login/`,
+  activate: (uid: string, token: string) => `${API_BASE_URL}/auth/activate/${uid}/${token}/`,
   tools: `${API_BASE_URL}/tools/`,
-  createCheckout: `${API_BASE_URL}/stripe/create-checkout/`,
+  createCheckout: `${API_BASE_URL}/checkout/`,
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

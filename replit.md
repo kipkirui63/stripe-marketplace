@@ -16,25 +16,19 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 - **Routing**: React Router for client-side navigation
 
 ### Backend Architecture
-- **Primary Backend**: Node.js with Express.js
-  - **Language**: TypeScript with ES modules
-  - **Database**: PostgreSQL with Drizzle ORM
-  - **Database Provider**: Neon Database (@neondatabase/serverless)
-  - **Session Management**: In-memory storage with extensible interface
-  - **Development**: Hot module replacement with Vite integration
-
 - **Django Backend**: Python/Django REST API (crisp_backend/)
   - **Framework**: Django 5.2.4 with Django REST Framework
-  - **Authentication**: Token-based authentication with JWT
+  - **Authentication**: JWT-based authentication with email verification
   - **Database**: PostgreSQL with Django ORM
-  - **Payment Processing**: Stripe integration
-  - **API Endpoints**: User auth, tool management, subscription handling
+  - **Payment Processing**: Stripe integration with webhooks
+  - **Email System**: HTML email templates for user activation
+  - **API Endpoints**: Complete REST API for all functionality
 
 ### Build System
 - **Frontend Build**: Vite with React plugin
-- **Backend Build**: esbuild for server bundling
-- **Development**: Concurrent development with Vite middleware
+- **Development**: Standalone React development server
 - **TypeScript**: Strict mode with path mapping
+- **Backend Development**: Django development server
 
 ## Key Components
 
@@ -68,10 +62,11 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 
 ### User Authentication Flow
 1. User submits login/registration form
-2. Frontend calls external API (api.crispai.ca)
+2. Frontend calls Django backend API (localhost:8000)
 3. JWT token stored in localStorage
 4. User context updated across application
 5. Protected routes become accessible
+6. Email verification required for new users
 
 ### Purchase Flow
 1. User adds apps to shopping cart
@@ -90,10 +85,11 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 ## External Dependencies
 
 ### APIs
-- **CrispAI API**: https://api.crispai.ca/api
-  - User authentication and registration
+- **Django Backend API**: http://localhost:8000/api
+  - User authentication with JWT and email verification
   - Tool/subscription management
-  - Stripe payment processing
+  - Stripe payment processing with webhooks
+  - Email activation system
 
 ### Third-party Services
 - **Stripe**: Payment processing integration
@@ -110,27 +106,31 @@ This is a full-stack marketplace application for CrispAI, a company that sells A
 ## Deployment Strategy
 
 ### Development
-- Local development with Vite dev server
+- **Frontend**: Vite dev server on port 5173
+- **Backend**: Django dev server on port 8000
 - Hot module replacement for fast iteration
 - TypeScript compilation checking
-- Database migrations with Drizzle Kit
+- Database migrations with Django ORM
 
 ### Production Build
 - Frontend assets built with Vite
-- Backend bundled with esbuild
-- Static assets served from dist/public
-- Express server serves both API and static files
+- Django backend serves API endpoints
+- Static assets served from dist/
+- Separate deployment for frontend and backend
 
 ### Environment Configuration
 - DATABASE_URL for PostgreSQL connection
-- NODE_ENV for environment-specific behavior
-- Replit-specific integrations and banners
+- EMAIL_HOST_USER and EMAIL_HOST_PASSWORD for email functionality
+- STRIPE_SECRET_KEY for payment processing
+- Django SECRET_KEY for security
 
 ## Changelog
 
 - July 05, 2025. Initial setup
 - July 15, 2025. Migrated from Replit Agent to standard Replit environment
 - July 15, 2025. Enhanced authentication flow with session timeout handling and login redirects
+- July 15, 2025. Removed Node.js/Express server completely, converted to standalone React frontend
+- July 15, 2025. Updated all API calls to use Django backend instead of external API
 
 ## Recent Changes
 
